@@ -1,0 +1,185 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 题库管理</title>
+
+    @BuildCssRef("~/Content/third/webuploader/webuploader.css")
+    @BuildJsRef("~/Content/third/webuploader/webuploader.nolog.min.js")
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">论坛活动管理</li>
+    <li id="MenuLevel2" class="active">处理人积分</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>所属活动：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.plan_id">
+                                <option v-for="item in planList" :value="item.value">
+                                    {{item.label}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="widget">
+                <div class="widget-footer tc">
+                    <span class="btn btn-info" v-on:click="search"><i class="glyphicon glyphicon-search"></i>查询</span>
+                    &nbsp;&nbsp;<span class="btn btn-primary-o" v-on:click="resetFitler"><i class="fa fa-undo"></i>重置</span>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <vue-uploader ref="import" style="float:right;padding-left:4px;width:40px;"
+                                  server-url="/OperationMgt/Plan/ImportUserPlanRank"
+                                  :multiple="false"
+                                  :allow-duplicate="false"
+                                  v-on:upload-success="handleImportSuccess">
+                        @*<button type="button" style="height:30px;width:50px;" class="btn btn-primary btn-xs">导入</button>*@
+                        <span class="btn btn-yellow btn-xs">导入</span>
+                    </vue-uploader>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="questionTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th style="text-align:center;">序号</th>
+                            <th style="text-align:center;">所属活动</th>
+                            <th style="text-align:center;">名词</th>
+                            <th style="text-align:center;">用户姓名</th>
+                            <th style="text-align:center;">活动积分</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <!--活动编辑模态框-->
+        @Html.Partial("~/Views/Components/VueUpload.cshtml")
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    plan_id: null
+                },
+                planList: []
+            },
+            mounted: function () {
+                this.filterInit();
+                this.dataTableInit();
+                //this.reloadData();
+            },
+            methods: {
+                  filterInit: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("SearchPlanList")',
+                        success: function (data) {
+                            self.planList=[{}].concat(data.Data);
+                        }
+                    });
+                },
+                search: function () {
+                    if (this.filter.plan_id) {
+                        this.copyFilter = _.extend(this.copyFilter, this.filter);
+                        this.reloadData();
+                    } else {
+                        $.showWarning("请选择所属活动");
+                    }
+                },
+                dataTableInit: function () {
+                    $table = $("#questionTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("UserPlanRankQuery")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                 {
+                                    orderable: false, title: "序号", render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + (meta.row + meta.settings._iDisplayStart + 1) + "</div>";
+
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "plan_name",width:'30%',title: "所属活动", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:left;'>" + data + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "rank", width:'20%', title: "名次", sName: "rank", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + data + "</div>";
+                                    }
+                                },
+                                { orderable: false, data: "name", width:'20%',title: "用户名称", sName: "name", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:left;'>" + data + "</div>";
+                                    } },
+                                {
+                                    orderable: false, data: "score", width:'20%', title: "活动积分", sName: "score", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + data + "</div>";
+                                    }
+                                }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                init: function () {
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                    grid.reload();
+                },
+                resetFitler: function () {
+                    this.filter = {
+                    plan_id: null
+                    };
+                },
+                //导入
+                 handleImportSuccess: function (e, res) {
+                    if (res.Success) {
+                        $.showSuccess(res.Message);
+                        grid.getDataTable().ajax.reload(null, false);
+                    }
+                    else {
+                        $.showError(res.Message);
+                    }
+                }
+            }
+        });
+
+    </script>
+}

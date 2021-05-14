@@ -1,0 +1,367 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 在线考试大道公告</title>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">资讯管理</li>
+    <li id="MenuLevel2" class="active">在线考试大道公告</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-lg-5 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>公告时间：</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.createTimeStart"
+                                       placeholder="开始时间"
+                                       class="form-control"
+                                       v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.createTimeEnd"
+                                       placeholder="结束时间"
+                                       class="form-control"
+                                       v-on:click="endTimePickerClick('endTime')" id="endTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="widget">
+                <div class="widget-footer tc">
+                    <span class="btn btn-info" v-on:click="search"><i class="glyphicon glyphicon-search"></i>查询</span>
+                    &nbsp;&nbsp;<span class="btn btn-primary-o" v-on:click="resetFitler"><i class="fa fa-undo"></i>重置</span>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span v-on:click="showDialog(null)" class="btn btn-yellow btn-xs">新增</span>
+                    <span class="btn btn-darkorange btn-xs" v-on:click="deleteData">删除</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="BulletinTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th style="text-align:center;"><input onfocus="this.select()" type="checkbox" /></th>
+                            <th style="text-align:center;">序号</th>
+                            <th style="text-align:center;">用户类型</th>
+                            <th style="text-align:center;">所属文件</th>
+                            <th style="text-align:center;">内容</th>
+                            <th style="text-align:center;">题型</th>
+                            <th style="text-align:center;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <!--活动编辑模态框-->
+        @Html.Partial("_BulletinEditView")
+        @Html.Partial("~/Views/Components/VueUpload.cshtml")
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var endTime = '@ViewBag.EndTime';
+        var startTime = '@ViewBag.StartTime';
+        var grid = new Datatable();
+        var showImgUrl = "http://sc.cmccsi.com.cn/api/file/";
+        function getTableSelectData() {
+            var trs = grid.getSelectedRowsData(false);
+            var result = [];
+            for (var i = 0; i < trs.length; i++) {
+                 result.push(trs[i].id);
+            }
+
+            return result;
+        }
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                filter: {
+
+                },
+                detail: {
+
+                },
+                typeList:[]
+
+            },
+            mounted: function () {
+                this.init();
+                this.dataTableInit();
+                this.reloadData();
+                this.showDialogEvent();
+            },
+            methods: {
+               search: function () {
+                    this.copyFilter = _.extend(this.copyFilter, this.filter);
+                    this.reloadData();
+                },
+                dataTableInit: function () {
+                    $table = $("#BulletinTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("BulletinQuery")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                 {
+                                    orderable: false,
+                                    width:40,
+                                    render: function (data, type, row) {
+                                        return '<div><input style="width:100%;" onfocus="this.select()" type="checkbox"/></div>';
+                                    }
+                                },
+                                {
+                                    orderable: false, title: "序号",width:50, render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + (meta.row + meta.settings._iDisplayStart + 1) + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "title",width:180,title: "公告标题", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:left;'>" + data + "</div>";
+                                    }
+                                },
+                                    {
+                                    orderable: false, data: "content",width:80,title: "公告正文", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:left;'>" + data + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "TypeDesc", width:100, title: "公告类型", sName: "TypeDesc", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + data + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "CreateTimeDesc", width: 80, title: "公告时间", sName: "CreateTimeDesc", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + data + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "Id", title: "操作", width: 100, sName: "Id", render: function (data, type, row, meta) {
+                                        var button = "<div style='width:100%;text-align:center;'>";
+                                        button += "<a style='text-align:center;cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.showDialog(" + row.id + ")'>" + "编辑" + "</a>";
+                                        button += "<a style='text-align:center;cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.deleteSingleData(" + row.id + ")'>" + "删除" + "</a>";
+                                        return button+"</div>";
+                                    }
+                                }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                init: function () {
+                    this.resetFitler();
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("GetTypeDic")',
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                debugger;
+                                self.typeList = data.Data
+                            }
+                        }
+                    });
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                    grid.reload();
+                },
+                resetFitler: function () {
+                    this.filter = {
+                        createTimeStart: startTime,
+                        createTimeEnd: endTime
+                    };
+                },
+                resetBulletin: function () {
+                    this.detail = {
+                    }
+                },
+                hideDialog: function () {
+                    var self = this;
+                    $("#bulletinViewEditModal").on('hide.bs.modal', function () {
+                        self.resetBulletin();
+                    });
+                },
+                showDialog: function (id) {
+                    var self = this;
+                    if (id) {
+                        $.ajax({
+                            type: 'POST',
+                            data: { id: id },
+                            url: '@Url.Action("BulletinDetail")',
+                            success: function (data) {
+                                if (data.Success) {
+                                    self.detail = data.Data;
+                                    $("#bulletinViewEditModal").modal();
+                                }
+                            }
+                        });
+                    } else {
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("BulletinModel")',
+                            success: function (data) {
+                                debugger;
+                                if (data.Success) {
+                                    self.detail = data.Data;
+                                    $("#bulletinViewEditModal").modal();
+                                }
+                            }
+                        });
+                    }
+                },
+                showDialogEvent: function () {
+                    var self = this;
+                    // 由于vue加载dom生命周期与bootstrap modal加载生命周期不同，导致上传文件按钮获取不到高度，因此在弹出加载的时候事件监听
+                    $("#bulletinViewEditModal").on('shown.bs.modal', function () {
+
+                    });
+                },
+                //保存
+                save: function () {
+                    let self = this;
+                    let data = this.detail;
+                    let validFlg = false;
+                    if (!data.type) {
+                        $.showWarning("公告类型必填");
+                        validFlg = true;
+                    }
+                      if (!data.title) {
+                        $.showWarning("公告标题必填");
+                        validFlg = true;
+                    }
+                      if (!data.content) {
+                        $.showWarning("公告内容必填");
+                        validFlg = true;
+                    }
+
+                    if (validFlg) {
+                        return;
+                    }
+                    $.ajax({
+                        url: "@Url.Action("SaveBulletin")",
+                        datatype: 'json',
+                        type: 'POST',
+                        contentType: 'application/json;charset=UTF-8',
+                        data: JSON.stringify(data),
+                           success: function (data) {
+                               if (data.Success) {
+                                   $.showSuccess(data.Message);
+                                   $("#bulletinViewEditModal").modal("hide");
+                                   grid.getDataTable().ajax.reload(null, false);
+                               }
+                           }
+                       });
+                },
+                //删除数据
+                deleteData: function () {
+                    var ids = getTableSelectData();
+                    if (!ids || ids.length == 0) {
+                        return $.showWarning("请选中要删除的题目！");
+                    }
+                    let self = this;
+                    $.confirm("是否确定删除？", function (ok) {
+                        if (ok) {
+                            self.deletePost(ids);
+                        }
+                    });
+                },
+                deleteSingleData: function (id) {
+                    let self = this;
+                    $.confirm("是否确定删除？", function (ok) {
+                        if (ok) {
+                            self.deletePost([id]);
+                        }
+                    });
+                },
+                deletePost: function (ids) {
+                       $.ajax({
+                                type: 'POST',
+                                contentType: 'application/json',
+                                url: "@Url.Action("DeleteBulletin")",
+                                data: JSON.stringify({ ids: ids }),
+                                success: function (data) {
+                                    if (data.Success) {
+                                        $.showSuccess(data.Message);
+                                        grid.getDataTable().ajax.reload(null, false);
+                                    }
+                                }
+                            });
+                },beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.createTimeStart = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.filter.createTimeStart = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.createTimeEnd = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.plan.createTimeEnd = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                }
+            }
+        });
+
+    </script>
+}

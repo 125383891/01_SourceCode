@@ -1,0 +1,311 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 题库管理</title>
+
+    @BuildCssRef("~/Content/third/webuploader/webuploader.css")
+    @BuildJsRef("~/Content/third/webuploader/webuploader.nolog.min.js")
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">模拟考试</li>
+    <li id="MenuLevel2" class="active">段位参数设置</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget">
+                <div class="widget-footer tc">
+                    <span class="btn btn-info" v-on:click="search"><i class="glyphicon glyphicon-search"></i>查询</span>
+                    @*&nbsp;&nbsp;<span class="btn btn-primary-o" v-on:click="resetFitler"><i class="fa fa-undo"></i>重置</span>*@
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="RankSettingTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th style="text-align:center;"><input onfocus="this.select()" type="checkbox" /></th>
+                            <th style="text-align:center;">序号</th>
+                            <th style="text-align:center;">段位等级</th>
+                            <th style="text-align:center;">最低积分要求</th>
+                            <th style="text-align:center;">最低正确率要求</th>
+                            <th style="text-align:center;">段位名称</th>
+                            <th style="text-align:center;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <!--活动编辑模态框-->
+        @Html.Partial("_RankSettingEditView")
+        @Html.Partial("~/Views/Components/VueUpload.cshtml")
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+        function getTableSelectData() {
+            var trs = grid.getSelectedRowsData(false);
+            var result = [];
+            for (var i = 0; i < trs.length; i++) {
+                 result.push(trs[i].id);
+            }
+
+            return result;
+        }
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    mode: 1,
+                    document_name: null,
+                    content: '',
+                    usertag: null
+                },
+                detail: {
+                    document_id: null,
+                    order_num: null
+
+                },
+                modeList: [{ name: '', id: null },
+                    { name: '单选', id: 1 },
+                    { name: '多选', id: 2 },
+                    { name: '判断', id: 3 }],
+                 usertagList: [{ name: '不限制', id: null },
+                    { name: '评审专家', id: 9 },
+                    { name: '采购人员', id: 10 },
+                    { name: '代理人员', id: 11 }],
+                usertagcheckList: [
+                    { name: '评审专家', id: 9 },
+                    { name: '采购人员', id: 10 },
+                    { name: '代理人员', id: 11 }],
+                imgViewUrl: ""
+            },
+            mounted: function () {
+                this.init();
+                this.dataTableInit();
+                this.reloadData();
+            },
+            methods: {
+               search: function () {
+                    this.copyFilter = _.extend(this.copyFilter, this.filter);
+                    this.reloadData();
+                },
+                dataTableInit: function () {
+                    $table = $("#RankSettingTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("RankSettingQuery")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                 {
+                                    orderable: false,
+                                     width:40,
+                                    render: function (data, type, row) {
+                                        return '<div><input style="width:100%;" onfocus="this.select()" type="checkbox"/></div>';
+                                    }
+                                },
+                                {
+                                    orderable: false, title: "序号",width:60, render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + (meta.row + meta.settings._iDisplayStart + 1) + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "rank_level",title: "段位等级", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + data + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "rank_name",  title: "段位名称", sName: "rank_name", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" +  (data==null?"":data) + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "score_require",title: "最低积分要求", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" +(data==null?"":data) + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "accuracy_requireDesc", title: "最低正确率要求", sName: "accuracy_requireDesc", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + ( data==null?"":data+"%") + "</div>";
+                                    }
+                                },
+                             
+                                {
+                                    orderable: false, data: "Id", title: "操作", width: 100, sName: "Id", render: function (data, type, row, meta) {
+                                        var button = "<div style='width:100%;text-align:center;'>";
+                                        button += "<a style='text-align:center;cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.showDialog(" + row.id + ")'>" + "编辑" + "</a>";
+                                        return button+"</div>";
+                                    }
+                                }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                init: function () {
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                    grid.reload();
+                },
+                resetFitler: function () {
+                    this.filter = {
+                       
+                    };
+                },
+                resetRankSetting: function () {
+                    this.detail = {
+                        rank_level: null,
+                        accuracy_require: null,
+                        score_require: null,
+                        rank_name: null
+                    }
+                },
+                hideDialog: function () {
+                    var self = this;
+                    $("#RankSettingViewEditModal").on('hide.bs.modal', function () {
+                        self.resetRankSetting();
+                    });
+                },
+                showDialog: function (id) {
+                     var self = this;
+                    $.ajax({
+                        type: 'POST',
+                        data: { id: id },
+                        url: '@Url.Action("RankSettingDetail")',
+                        success: function (data) {
+                            if (data.Success) {
+                                self.detail = data.Data;
+                                $("#RankSettingViewEditModal").modal();
+                            }
+                        }
+                    });
+                },
+                //正确率
+                validNum: function (e) {
+                    let value = e.target.value;
+                    let mark = false;
+                    if (isNaN(value)) {
+                            $.showWarning("必须输入0~100数字");
+                            mark = true;
+                    } else {
+                        if (value > 100 || value<0) {
+                            $.showWarning("必须输入0~100数字");
+                            mark = true;
+                        } else {
+                            value = parseFloat(value);
+                        }
+                    }
+                    if (mark) {
+                        value = 0;
+                    }
+                    this.detail.accuracy_require = value.toFixed(2);
+                },
+                //
+                  validNum1: function (e) {
+                    let value = e.target.value;
+                    debugger;
+                    let mark = false;
+                    if (isNaN(value)) {
+                         $.showWarning("必须输入非负整数");
+                         mark = true;
+                    } else {
+                        if (value<0) {
+                            $.showWarning("必须输入非负整数");
+                            mark = true;
+                        } else {
+                            value = parseInt(value);
+                        }
+                    }
+                    if (mark) {
+                        value = 0;
+                    }
+                    this.detail.score_require = value;
+                },
+                //保存
+                save: function () {
+                    let self = this;
+                    let data = this.detail;
+                    let validFlg = false;
+                    if (!data.rank_name) {
+                        $.showWarning("段位名称必填");
+                        validFlg = true;
+                    }
+                    if (validFlg) {
+                        return;
+                    }
+                    $.ajax({
+                        url: "@Url.Action("SaveRankSetting")",
+                        datatype: 'json',
+                        type: 'POST',
+                        contentType: 'application/json;charset=UTF-8',
+                        data: JSON.stringify(data),
+                           success: function (data) {
+                               if (data.Success) {
+                                   $.showSuccess(data.Message);
+                                   $("#RankSettingViewEditModal").modal("hide");
+                                   grid.getDataTable().ajax.reload(null, false);
+                               }
+                           }
+                       });
+                },
+                //删除数据
+                deleteData: function () {
+                    var ids = getTableSelectData();
+                    if (!ids || ids.length == 0) {
+                        return $.showWarning("请选中要删除的题目！");
+                    }
+                    let self = this;
+                    $.confirm("是否确定删除？", function (ok) {
+                        if (ok) {
+                            self.deletePost(ids);
+                        }
+                    });
+                },
+                deleteSingleData: function (id) {
+                    let self = this;
+                    $.confirm("是否确定删除？", function (ok) {
+                        if (ok) {
+                            self.deletePost([id]);
+                        }
+                    });
+                },
+                deletePost: function (ids) {
+                       $.ajax({
+                                type: 'POST',
+                                contentType: 'application/json',
+                                url: "@Url.Action("DeleteRankSetting")",
+                                data: JSON.stringify({ ids: ids }),
+                                success: function (data) {
+                                    if (data.Success) {
+                                        $.showSuccess(data.Message);
+                                        grid.getDataTable().ajax.reload(null, false);
+                                    }
+                                }
+                            });
+                }
+            }
+        });
+
+    </script>
+}

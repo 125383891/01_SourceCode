@@ -1,0 +1,181 @@
+﻿
+<div class="modal fade bs-example-modal-lg" id="examViewEditModal" tabindex="-1" role="dialog"
+     aria-labelledby="examViewEditModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">
+                    ×
+                </button>
+                <h4 class="modal-title">编辑</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>用户类型：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+
+                            <select v-if="detail.id" class="form-control select-fix100" v-model="detail.user_tag" disabled>
+                                <option v-for="item in usertagcheckList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                            <select v-else="!detail.id" class="form-control select-fix100" v-model="detail.user_tag" >
+                                <option v-for="item in usertagcheckList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                     
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>考试名称：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.title" name="title" placeholder="考试名称" type="text" class="form-control input-no-clear" />
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>指导语：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.introducation" name="introducation" placeholder="指导语" type="text" class="form-control input-no-clear" />
+                            <input placeholder="考试名称" type="text" style="display:none;" class="form-control input-no-clear" />
+                            @*<input v-model="detail.introducation" name="" placeholder="指导语" type="text"  class="form-control input-no-clear" />*@
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+
+                            <label>关联文档：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <textarea id="document-text" v-model="detail.documentStr" style="resize:none;width:283.33px;" placeholder="每行一个文档"></textarea>
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>抽题数量：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.total_num" name="total_num" v-on:change="validNum1" placeholder="只能填入正整数" type="number" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>开始日期：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            @*<input v-model="detail.begin_time" name="begin_time" placeholder="开始日期" type="number" class="form-control input-no-clear" />*@
+                            <input type="text"
+                                   readonly
+                                   style="cursor:pointer"
+                                   v-model="detail.begin_time"
+                                   placeholder="开始时间"
+                                   class="form-control"
+                                   v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>结束日期：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            @*<input v-model="detail.end_time" name="end_time"  placeholder="结束日期" type="number"  class="form-control input-no-clear" />*@
+                            <input type="text"
+                                   readonly
+                                   style="cursor:pointer"
+                                   v-model="detail.end_time"
+                                   placeholder="结束时间"
+                                   class="form-control"
+                                   v-on:click="endTimePickerClick('endTime')" id="endTime">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>每题分数：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.score" name="score" v-on:change="validNum1" placeholder="每题分数" type="number" class="form-control input-no-clear" />
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>单选占比：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.pct_mode1" name="pct_mode1" v-on:change="validNum" placeholder="输入0~100" type="number" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>多选占比：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.pct_mode2" name="pct_mode2" v-on:change="validNum" placeholder="输入0~100" type="number" class="form-control input-no-clear" />
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>判断占比：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.pct_mode3" name="pct_mode3" v-on:change="validNum" placeholder="输入0~100" type="number" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>限制时间：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.time_restrict" name="time_restrict" v-on:change="validNum1" placeholder="输入0表示不限" type="number" class="form-control input-no-clear" />
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>题目排序：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            @*<input v-model="detail.order_mode" name="order_mode" placeholder="题目排序" type="number" class="form-control input-no-clear" />*@
+                            <select class="form-control select-fix100" v-model="detail.order_mode">
+                                <option v-for="item in order_modeList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>允许参与次数：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.limit_num" name="limit_num" v-on:change="validNum1" placeholder="允许参与次数" type="number" class="form-control input-no-clear" />
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>是否启用：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            @*<input v-model="detail.is_begin" name="is_begin" placeholder="是否启用" type="number" class="form-control input-no-clear" />*@
+                            <select class="form-control select-fix100" v-model="detail.is_begin">
+                                <option v-for="item in is_beginList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" v-on:click="save">保存</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>

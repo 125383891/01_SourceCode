@@ -1,0 +1,94 @@
+﻿<div class="modal fade bs-example-modal-lg" id="documentEditModal" tabindex="-1" role="dialog"
+     aria-labelledby="documentEditModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    ×
+                </button>
+                <h4 class="modal-title">新增文件</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>用户类型：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            @*<input name="usertag" v-model="document.Usertag" placeholder="用户类型" type="text" class="form-control input-no-clear" />*@
+                            <select class="form-control select-fix100" v-model="document.Usertag">
+                                <option v-for="item in usertagcheckList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>是否学习资料：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input name="isstudymaterials" v-model="document.IsStudyMaterials" placeholder="是否学习资料" type="checkbox" class="form-check-input"/>
+
+                            @*<input v-model="detail.introducation" name="" placeholder="指导语" type="text"  class="form-control input-no-clear" />*@
+                        </div>
+                       
+                    </div>
+                 
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>要求学习时间：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input name="minminutes" v-model="document.Minminutes"  v-on:change="validNum" placeholder="要求学习时间" type="number" class="form-control input-no-clear" />
+                            @*<input v-model="detail.introducation" name="" placeholder="指导语" type="text"  class="form-control input-no-clear" />*@
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>排序：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="document.OrderNum" placeholder="排序" type="text" maxlength="10" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>关键词：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="document.Words" placeholder="关键词（多个关键词半角逗号隔开）" type="text" maxlength="1000" class="form-control input-no-clear" />
+                            @*<input class="form-control input-no-clear" name="sss" maxlength="1000" v-model="document.Words" rows="6" id="form-field-8" placeholder="关键词（多个关键词半角逗号隔开）" />*@
+@*                            <textarea class="form-control" maxlength="1000" v-model="document.Words" rows="6" id="form-field-8" placeholder="关键词（多个关键词半角逗号隔开）"></textarea>*@
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>文件：</label>
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2">
+                            <vue-uploader ref="upload"
+                                          :server-url="window.uploadUrl"
+                                          :accept="accept"
+                                          :multiple="false"
+                                          :file-single-size-limit="1024 * 1024 * 10"
+                                          :allow-duplicate="false"
+                                          v-on:upload-success="handleUploadSuccess">
+                                <button type="button" style="height:30px;width:80px;" class="btn btn-primary">上传文件</button>
+                            </vue-uploader>
+                            <p class="text-success" v-if="document.HasUpload" v-text="'上传成功：'+document.Name"></p>
+                        </div>
+                        <label v-if="document.Name">{{document.Name}}</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" v-on:click="saveDocument">确认</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>

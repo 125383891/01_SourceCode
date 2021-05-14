@@ -1,0 +1,259 @@
+@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 线形图</title>
+    @BuildJsRef("~/Content/third/echarts.common.min.js")
+    <style type="text/css">
+    /*tab 切换 start*/
+    .toggle-tab {
+        height: 100%;
+        width: 100%;
+    }
+
+        .toggle-tab .tab-top {
+            width: 100%;
+            height: 30px;
+            line-height: 30px;
+            padding: 10px 0 5px;
+        }
+
+    .tab-buttons {
+        width: 154px;
+        height: 30px;
+        border: 2px solid #5eb5e2;
+        border-radius: 5px;
+        box-sizing: border-box;
+        background: #fff;
+        float: right;
+        margin-right: 10px;
+        min-width: 126px;
+    }
+
+        .tab-buttons > span {
+            float: left;
+            text-align: center;
+            height: 100%;
+            line-height: 25px;
+            color: #7b7b7b;
+            white-space: nowrap;
+            padding: 0 5px;
+            cursor: pointer;
+            border-left: 2px solid #5eb5e2;
+            min-width: 50px;
+            outline: none;
+        }
+
+            .tab-buttons > span:first-child {
+                border-left: 0;
+            }
+
+            .tab-buttons > span.selected {
+                background: #5eb5e2;
+                color: #fff;
+            }
+
+    .toggle-tab .tab-content {
+        position: absolute;
+        top: 45px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 8;
+    }
+
+        .toggle-tab .tab-content > div {
+            width: 100%;
+            height: 100%;
+        }
+    /*tab 切换 start*/
+    .button {
+        border: 1px solid #2CBB87;
+        height: 34px;
+        line-height: 20px;
+        min-width: 60px;
+        color: #fff;
+        background-color: #2CBB87;
+        letter-spacing: 1px;
+        text-indent: 2px;
+        padding: 0 5px;
+        font-size: 12px;
+        font-family: "微软雅黑";
+        cursor: pointer;
+        outline: none;
+    }
+
+    .basicTab {
+        margin-top: 60px;
+    }
+</style>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">线形图</li>
+}
+
+@section rsContent {
+	<div id="container">
+		<div class="row">
+            <div class="col-sm-3 col-xs-12">
+            	<div class="margin_left5" style="position: relative;display: inline-block;vertical-align: middle;">
+	            <span class="tab-buttons" >
+	                <span onclick="statis.togglePeriod(2,this)" class="">日</span>
+	                <span onclick="statis.togglePeriod(3,this)" class="">月</span>
+	                <span onclick="statis.togglePeriod(4,this)" class="selected">年</span>
+	            </span>
+            	</div>
+            </div>           
+            <div class="col-sm-6 col-xs-12">
+				<div class="col-sm-3 control-label"><label>创建日期：</label></div>
+				<div class="col-sm-4">
+	                <div class="input-group non-padding">
+	                    <input type="text"
+	                           readonly
+	                           style="cursor:pointer"
+	                           v-model="filter.StartTime"
+	                           placeholder="开始时间"
+	                           class="form-control"
+	                           v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+	                    <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+	                </div>
+				</div>
+				<div class="col-sm-4">
+					<div class="input-group non-padding">
+						<input type="text"
+							   readonly
+							   style="cursor:pointer"
+							   v-model="filter.EndTime"
+							   placeholder="结束时间"
+							   class="form-control"
+							   v-on:click="endTimePickerClick('endTime')" id="endTime">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+					</div>
+				</div>
+            </div>
+			<div class="form-group col-sm-3 col-xs-12" align="right">
+				<div class="col-sm-4 control-label">
+					<button class="btn btn-primary button">查询</button>
+				</div> 
+			</div>
+       	</div>
+		<div class="basicTab">
+			<div id="lineChart"  style="width: 960px;height: 360px;">1</div>
+		</div>
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+	  var vue= new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    StartTime: null,
+                    EndTime: null
+                }
+            },
+            mounted: function () {
+                var dom=document.getElementById("lineChart");
+				var data={
+					"dayList": ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+					"QYList": [22,51,15,54,46,15,48,24,45,59,5,55]
+				}
+				this.initLine(dom,data)
+            },
+            methods: {
+                beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.StartTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.filter.StartTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.EndTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.filter.EndTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                initLine: function(dom,data){//设备用电分析
+					var that=this;
+					var myChart = echarts.init(dom);
+					option = {
+					    tooltip : {
+					        trigger: 'axis'
+					    },
+					    legend: {
+					    	show:false,
+					        data:['电'],
+					        x:'center',
+					        y:'bottom',
+					    },
+					    calculable : true,
+					    xAxis : [
+					        {
+					            type : 'category',
+			   		            boundaryGap : true,//类目起始和结束两端空白策略
+					            data : data.dayList
+					        }
+					    ],
+					    yAxis : [
+					        {
+					            type : 'value',
+					   		    name : "",
+					   		    nameTextStyle:{
+						    		textAlign:'left'   		    	
+					   		    }
+					        }
+					    ],
+					    series : {
+					    	name:'电11',
+				            type:'line',
+				            smooth:true, 
+				            smoothness:1,
+				            yAxisIndex: 0,
+				            clickable:false,
+				            data:data.QYList,
+				            markPoint : {
+				                data : [
+				                    {type : 'max', name: '最大值'},
+				                    {type : 'min', name: '最小值'}
+				                ]
+				            },
+				            markLine : {
+				                data : [
+				                    {type : 'average', name: '平均值'}
+				                ]
+				            }
+					    }
+					};
+					if (option && typeof option === "object") {
+					    myChart.setOption(option, true);
+					}
+				}
+            }
+        });
+    </script>
+}

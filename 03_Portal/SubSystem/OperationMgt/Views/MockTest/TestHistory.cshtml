@@ -1,0 +1,322 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 测验历史记录</title>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">模拟考试</li>
+    <li id="MenuLevel2" class="active">测验历史记录</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-lg-5 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>测验日期：</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.StartTime"
+                                       @*placeholder="开始时间"*@
+                                       class="form-control"
+                                       v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.EndTime"
+                                       @*placeholder="结束时间"*@
+                                       class="form-control"
+                                       v-on:click="endTimePickerClick('endTime')" id="endTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>测验类型：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.mode">
+                                <option v-for="item in modeList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>针对文档：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input v-model.trim="filter.document_name" name="content" maxlength="2000" class="form-control">
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row mt15">
+                    <div class="form-group col-lg-5 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>针对模拟考试：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.examid">
+                                <option v-for="item in examList" :value="item.id">
+                                    {{item.title}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>排序指标：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.sortColumn">
+                                <option v-for="item in columnList" :value="item.column">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="widget">
+                <div class="widget-footer tc">
+                    <span class="btn btn-info" v-on:click="search"><i class="glyphicon glyphicon-search"></i>查询</span>
+                    &nbsp;&nbsp;<span class="btn btn-primary-o" v-on:click="resetFitler"><i class="fa fa-undo"></i>重置</span>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span class="btn btn-yellow btn-xs" v-on:click="Export">导出</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="examtestTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th style="text-align:center;"><input onfocus="this.select()" type="checkbox" /></th>
+                            <th style="text-align:center;">序号</th>
+                            <th style="text-align:center;">测验时间</th>
+                            <th style="text-align:center;">测验类型</th>
+                            <th style="text-align:center;">针对文档</th>
+                            <th style="text-align:center;">针对模拟考试</th>
+                            <th style="text-align:center;">测验人</th>
+                            <th style="text-align:center;">所在部门</th>
+                            <th style="text-align:center;">总题目数</th>
+                            <th style="text-align:center;">正确题目数</th>
+                            <th style="text-align:center;">正确率，自动计算</th>
+                            <th style="text-align:center;">实际得分</th>
+                            <th style="text-align:center;">测验总分</th>
+                            <th style="text-align:center;">测验耗时(分钟)</th>
+                            <th style="text-align:center;">是否已完成</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <!--活动编辑模态框-->
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+        var begindate = '@DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd")';
+        var enddate = '@DateTime.Now.ToString("yyyy-MM-dd")';
+        function getTableSelectData() {
+            var trs = grid.getSelectedRowsData(false);
+            var result = [];
+            for (var i = 0; i < trs.length; i++) {
+                 result.push(trs[i].id);
+            }
+
+            return result;
+        }
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    mode: null,
+                    document_name: null,
+                    StartTime: begindate,
+                    EndTime: enddate,
+                    examid: null,
+                    sortColumn:'begin_time'
+
+                },
+                detail: {
+                    document_id: null,
+                    order_num: null
+
+                },
+                modeList: [{ name: '', id: null },
+                    { name: '个人练习', id: 1 },
+                    { name: '模拟考试', id: 2 }],
+                examList: [],
+                columnList: [
+                    { name: '测验时间', column: 'begin_time' },
+                    { name: '正确率', column: 'rightRate' },
+                    { name: '实际得分', column: 'score' },
+                    { name: '测验耗时', column: 'duration' }
+                ]
+            },
+            mounted: function () {
+                this.filterInit();
+                this.dataTableInit();
+                this.reloadData();
+            },
+            methods: {
+                filterInit: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("GetExamList")',
+                        success: function (data) {
+                            debugger;
+
+                            self.examList=[{}].concat(data.Data);
+                        }
+                    });
+                },
+                beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function(dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.StartTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                            self.filter.StartTime = null;
+                            self.$emit('input', '');
+                        }
+                    });
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function(dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.EndTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                            self.filter.EndTime = null;
+                            self.$emit('input', '');
+                        }
+                    });
+                },
+               search: function () {
+                    //this.copyFilter = _.extend(this.copyFilter, this.filter);
+                    this.reloadData();
+                },
+                dataTableInit: function () {
+                    $table = $("#examtestTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("ExamTestQuery")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                 {
+                                    orderable: false,
+                                     width:40,
+                                    render: function (data, type, row) {
+                                        return '<div><input style="width:100%;" onfocus="this.select()" type="checkbox"/></div>';
+                                    }
+                                },
+                                {
+                                    orderable: false, title: "序号",width:40, render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:center;'> "+(meta.row + meta.settings._iDisplayStart + 1)+"</div>";
+                                    }
+                                },
+                                { orderable: false, data: "Begin_time_str",width:80, title: "测验时间", sName: "begin_time_str" },
+                                { orderable: false, data: "ModeStr",width:70, title: "测验类型", sName: "ModeStr" },
+                                { orderable: false, data: "Document_name", title: "针对文档", sName: "Document_name" },
+                                { orderable: false, data: "Title", title: "针对模拟考试", sName: "Title" },
+                                { orderable: false, data: "UserName", title: "测验人", sName: "UserName" },
+                                { orderable: false, data: "DeptName", title: "所在部门", sName: "DeptName" },
+                                { orderable: false, data: "total_num", title: "总题目数", sName: "total_num", render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:right;'> "+data+"</div>";
+                                    } },
+                                { orderable: false, data: "right_num", title: "正确题目数", sName: "right_num", render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:right;'> "+data+"</div>";
+                                    } },
+                                { orderable: false, data: "RightRate", title: "正确率", sName: "RightRate" , render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:right;'> "+data+"</div>";
+                                    }},
+                                { orderable: false, data: "score", title: "实际得分", sName: "score" , render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:right;'> "+data+"</div>";
+                                    }},
+                                { orderable: false, data: "total_score", title: "测验总分", sName: "total_score" , render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:right;'> "+data+"</div>";
+                                    }},
+                                { orderable: false, data: "duration_m", title: "测验耗时(分钟)", sName: "duration_m" , render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:right;'> "+data.toFixed(1)+"</div>";
+                                    }},
+                                { orderable: false, data: "IsCompleteStr", title: "是否已完成", sName: "IsCompleteStr", render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:center;'> "+data+"</div>";
+                                    } }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                    grid.reload();
+                },
+                resetFitler: function () {
+                    this.filter={
+                    mode: null,
+                    document_name: null,
+                    StartTime: begindate,
+                    EndTime: enddate,
+                    examid: null,
+                    sortColumn:'begin_time'
+                    }
+                },
+                Export: function () {
+                    $.exportExcel('@Url.Action("ExportExamTestList")', [{ name: 'queryString', value: $.toJSON(this.filter) }]);
+                }
+            }
+        });
+
+    </script>
+}

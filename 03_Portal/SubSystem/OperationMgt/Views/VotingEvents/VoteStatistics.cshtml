@@ -1,0 +1,136 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 投票活动统计</title>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">投票活动管理</li>
+    <li id="MenuLevel2" class="active">投票活动统计</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>投票活动：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.voteid">
+                                <option v-for="item in voteList" :value="item.id">
+                                    {{item.title}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="widget">
+                <div class="widget-footer tc">
+                    <span class="btn btn-info" v-on:click="search"><i class="glyphicon glyphicon-search"></i>查询</span>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    @*<span class="btn btn-yellow btn-xs" v-on:click="Export">导出</span>*@
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered">
+                    <thead class="bordered">
+                        <tr>
+                            <th style="text-align:center;width:40px;">序号</th>
+                            <th style="text-align:center;">投票活动</th>
+                            <th style="text-align:center;">选项内容</th>
+                            <th style="text-align:center;">选项备注</th>
+                            <th style="text-align:center;width:80px;">投票数</th>
+                            <th style="text-align:center;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item,index) in tableList">
+                            <td style="text-align:center;" v-text="index+1"></td>
+                            <td v-text="item.title"></td>
+                            <td v-text="item.content"></td>
+                            <td v-text="item.ext_val"></td>
+                            <td style="text-align:center;" v-text="item.count"></td>
+                            <td style="border-right:0;text-align:center; width:80px;">
+                                <a style='text-align:center;cursor: pointer;' href='javascript:void(0)' v-on:click='Export(item.vote_id)'>导出</a>
+                            </td>
+                        </tr>
+                        <tr v-if="tableList.length === 0">
+                            <td colspan="10" style="text-align:center;">暂无数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    voteid: null
+                },
+                tableList: [],
+                voteList:[]
+            },
+            mounted: function () {
+                this.loadDic();
+                this.search();
+            },
+            methods: {
+               search: function () {
+                   var self = this;
+                    $.ajax({
+                        url: "@Url.Action("VoteStatisticsQuery")",
+                        type: "GET",
+                        contentType: 'application/json;charset=UTF-8',
+                        datatype: "json",
+                        data:this.filter ,
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                self.tableList = data.Data;
+                            }
+                        }
+                    });
+                },
+                Export: function (id) {
+                    $.exportExcel('@Url.Action("ExportUserVoteStatistics")', [{ name: 'queryString', value: $.toJSON({voteid:id}) }]);
+                },
+                loadDic: function () {
+                    debugger;
+                    var self = this;
+                    $.ajax({
+                        url: "@Url.Action("GetVoteAll")",
+                        type: "GET",
+                        contentType: 'application/json;charset=UTF-8',
+                        datatype: "json",
+                        success: function (data) {
+                            debugger;
+                            if (data.Data && data.Success) {
+                                self.voteList = [{}].concat(data.Data);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+    </script>
+}

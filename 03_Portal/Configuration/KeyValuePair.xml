@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Root>
+  <!--用法说明
+      Name:NormalPaymentType
+      Desc:日常报销类型
+      Usage:
+        ViewBag.NormalPaymentType = ConfigManager.GetKeyValuePair("NormalPaymentType");
+  -->
+  <KeyValuePair name="NormalPaymentType">
+    <item key="0" value="外出车费"/>
+    <item key="1" value="客户餐费"/>
+    <item key="2" value="车费"/>
+    <item key="3" value="餐费"/>
+    <item key="4" value="手机费"/>
+    <item key="5" value="其他"/>
+  </KeyValuePair>
+</Root>

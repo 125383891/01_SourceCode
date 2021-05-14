@@ -1,0 +1,398 @@
+@using LYY.Report.Entity
+@using LYY.Article.Entity
+@{ 
+    var current = DateTime.Now;
+    var weekStartTime = new DateTime(current.Year, current.Month, current.Day).AddDays(-7);
+    var weekEndTime = new DateTime(current.Year, current.Month, current.Day);
+    var monthStarTime = new DateTime(current.Year, 1, 1);
+    var monthEndTime = new DateTime(current.Year, 12, 31);
+}
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 推文访问统计</title>
+    @BuildCssRef("~/Content/third/select2/4.0.2/css/select2.min.css")
+    @BuildJsRef("~/Content/third/echarts.common.min.js")
+    <style type="text/css">
+        /*tab 切换 start*/
+        .toggle-tab
+        {
+            height: 100%;
+            width: 100%;
+        }
+
+            .toggle-tab .tab-top
+            {
+                width: 100%;
+                height: 30px;
+                line-height: 30px;
+                padding: 10px 0 5px;
+            }
+
+        .tab-buttons
+        {
+            height: 30px;
+            border: 2px solid #5eb5e2;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background: #fff;
+            float: right;
+            margin-right: 10px;
+        }
+
+            .tab-buttons > span
+            {
+                float: left;
+                text-align: center;
+                height: 100%;
+                line-height: 25px;
+                color: #7b7b7b;
+                white-space: nowrap;
+                padding: 0 5px;
+                cursor: pointer;
+                border-left: 2px solid #5eb5e2;
+                min-width: 50px;
+                outline: none;
+            }
+
+                .tab-buttons > span:first-child
+                {
+                    border-left: 0;
+                }
+
+                .tab-buttons > span.selected
+                {
+                    background: #5eb5e2;
+                    color: #fff;
+                }
+
+        .toggle-tab .tab-content
+        {
+            position: absolute;
+            top: 45px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 8;
+        }
+
+            .toggle-tab .tab-content > div
+            {
+                width: 100%;
+                height: 100%;
+            }
+        /*tab 切换 start*/
+        .button
+        {
+            border: 1px solid #2CBB87;
+            height: 34px;
+            line-height: 20px;
+            min-width: 60px;
+            color: #fff;
+            background-color: #2CBB87;
+            letter-spacing: 1px;
+            text-indent: 2px;
+            padding: 0 5px;
+            font-size: 12px;
+            font-family: "微软雅黑";
+            cursor: pointer;
+            outline: none;
+        }
+
+        .basicTab
+        {
+            margin-top: 60px;
+        }
+    </style>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">快车道查询统计</li>
+    <li id="MenuLevel2" class="active">推文访问统计</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>统计模式：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="margin_left5" style="position: relative;display: inline-block;vertical-align: middle;">
+                                <span class="tab-buttons">
+                                    <span v-on:click="togglePeriod(@((int)DateTimeTypeEnum.Week))" v-bind:class="{selected:filter.DateTimeType===@((int)DateTimeTypeEnum.Week)}">日</span>
+                                    <span v-on:click="togglePeriod(@((int)DateTimeTypeEnum.Month))" v-bind:class="{selected:filter.DateTimeType===@((int)DateTimeTypeEnum.Month)}">月</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>推文引用：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-bind:change="searchData" v-model="filter.ArticleApplicationType">
+                                <option v-for="item in articleApplicationTypeList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>推文：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control" style="padding:0px 0px;border:0px;" id="el" v-model="filter.ArticleId">
+                                <option v-for="item in articleList" :value="item.BusinessId">
+                                    {{item.Name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>时间段：</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer;min-width:100px;"
+                                       v-model="filter.StartTime"
+                                       placeholder="开始时间"
+                                       class="form-control"
+                                       v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer;min-width:100px;"
+                                       v-model="filter.EndTime"
+                                       placeholder="结束时间"
+                                       class="form-control"
+                                       v-on:click="endTimePickerClick('endTime')" id="endTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-2 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="searchData">查询</button>
+                        </div>
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="resetFilter">重置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="widget">
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="basicTab">
+                        <div id="lineChart" style="width: 100%;height: 360px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+@section rsFooter {
+    @BuildJsRef("/Content/third/select2/select2.js")
+    <script type="text/javascript">
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                articleApplicationTypeList: [{
+                    id: '@((int)ArticleEnums.LegalComplianceApplication)',
+                    name:'@ArticleEnums.LegalComplianceApplication.GetDescription()'
+                }, {
+                   id: '@((int)ArticleEnums.ExpertManagement)',
+                   name: '@ArticleEnums.ExpertManagement.GetDescription()'
+                }],
+                filter: {
+                    ArticleApplicationType: '@((int)ArticleEnums.LegalComplianceApplication)',
+                    ArticleId: null,
+                    DateTimeType: @((int)DateTimeTypeEnum.Week),
+                    StartTime: '@(weekStartTime.ToString("yyyy-MM-dd"))',
+                    EndTime:  '@(weekEndTime.ToString("yyyy-MM-dd"))',
+                },
+                articleList:[],
+                option: {
+                    tooltip: {
+                        trigger: 'axis',
+                        label: {
+                            show: true
+                        }
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            boundaryGap: false,//类目起始和结束两端空白策略
+                            data: []
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                        }
+                    ],
+                    series: [{
+                        name: '阅读数量',
+                        data: [],
+                        type: 'line',
+						smooth: true
+                    }, {
+                        name: '评论数量',
+                        type: 'line',
+                        smooth: true,
+                        data: []
+                    }]
+                },
+                chartList: [],
+                myChart: null
+            },
+            watch:{
+                chartList: function () {
+                    this.refreshChart();
+                }
+            },
+            mounted: function () {
+                this.initSelect2();
+                this.myChart = echarts.init(document.getElementById("lineChart"));
+                this.initArticleList();
+                this.searchData();
+            },
+            methods: {
+                resetFilter: function () {
+                    this.filter = {
+                        ArticleApplicationType: '@((int)ArticleEnums.LegalComplianceApplication)',
+                        ArticleId: null,
+                        DateTimeType: @((int)DateTimeTypeEnum.Week),
+                        StartTime: '@(weekStartTime.ToString("yyyy-MM-dd"))',
+                        EndTime:  '@(weekEndTime.ToString("yyyy-MM-dd"))',
+                    }
+                },
+                initSelect2: function () {
+                    var self = this;
+                    $("#el").select2();
+                    $("#el").on('change', function (e) {
+                        self.filter.ArticleId = parseInt(e.val);
+                    });
+
+                },
+                togglePeriod: function (type) {
+                    this.filter.DateTimeType = type;
+                    switch (type) {
+                        case @((int)DateTimeTypeEnum.Week):
+                            this.filter.StartTime = '@(weekStartTime.ToString("yyyy-MM-dd"))';
+                            this.filter.EndTime = '@(weekEndTime.ToString("yyyy-MM-dd"))';
+                            break;
+                        case @((int)DateTimeTypeEnum.Month):
+                            this.filter.StartTime = '@(monthStarTime.ToString("yyyy-MM-dd"))';
+                            this.filter.EndTime = '@(monthEndTime.ToString("yyyy-MM-dd"))';
+                            break;
+                        default:
+                            this.filter.StartTime = '@(weekStartTime.ToString("yyyy-MM-dd"))';
+                            this.filter.EndTime = '@(weekEndTime.ToString("yyyy-MM-dd"))';
+                            break;
+                    }
+                },
+                searchData: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'POST',
+                        contentType:'application/json',
+                        url: '@Url.Action("QueryArticleInterviewStatistics")',
+                        data: $.toJSON(self.filter),
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                self.chartList = data.Data
+                            }
+                        }
+                    });
+                },
+                refreshChart: function () {
+                    var self = this;
+                    var xAxis = _.pluck(self.chartList, "Key");
+                    var data = _.pluck(self.chartList, "Value");
+                    var data2 = _.pluck(self.chartList, "Value2");
+                    var temp = _.find(self.articleList, function (item) { return item.BusinessId === self.filter.ArticleId });
+                    self.option.title = {
+                        text: temp == null || temp.BusinessId === null ? '' : temp.Name,
+                        x: 'center',
+                        y: 'top',
+                        left: 'center'
+                    };
+                    self.option.xAxis[0].data = xAxis;
+                    self.option.series[0].data = data;
+                    self.option.series[1].data = data2;
+                    self.myChart.setOption(self.option, true);
+                },
+                beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        isShowClear: false,
+                        readOnly: true,
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.StartTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.filter.StartTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        isShowClear: false,
+                        readOnly: true,
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.EndTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.filter.EndTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                initArticleList: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("QueryArticleList")',
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                self.articleList = _.union([{ BusinessId: null, Name: '全选' }], _.map(data.Data, function (item) { return { BusinessId: item.BusinessId, Name: item.Title } }));
+                                self.$nextTick(function () {
+                                    $('#el').val('').trigger('change');
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+}

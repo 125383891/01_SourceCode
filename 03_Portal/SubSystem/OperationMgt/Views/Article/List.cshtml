@@ -1,0 +1,237 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 推文管理</title>
+
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">推文管理</li>
+    <li id="MenuLevel2" class="active">推文浏览</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>推文标题：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input v-model.trim="filter.Title" placeholder="推文标题" maxlength="2000" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-5 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>创建日期：</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.StartTime"
+                                       placeholder="开始时间"
+                                       class="form-control"
+                                       v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.EndTime"
+                                       placeholder="结束时间"
+                                       class="form-control"
+                                       v-on:click="endTimePickerClick('endTime')" id="endTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-2 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="reloadData">查询</button>
+                        </div>
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="resetFitler">重置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span v-on:click="gotoEdit(null)" class="btn btn-yellow btn-xs">新增</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="articleTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th>序号</th>
+                            <th>针对应用</th>
+                            <th>发表日期</th>
+                            <th>推文标题</th>
+                            <th>评论数</th>
+                            <th>点赞数</th>
+                            <th>阅读次数</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+
+       var vue= new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    Title: null,
+                    StartTime: null,
+                    EndTime: null
+                }
+            },
+            mounted: function () {
+                this.dataTableInit();
+                this.reloadData();
+            },
+            methods: {
+                dataTableInit: function () {
+                    $table = $("#articleTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("Query")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                {
+                                    orderable: false, title: "序号", render: function (data, type, full, meta) {
+                                        return meta.row + meta.settings._iDisplayStart + 1;
+                                    }
+                                },
+                                { orderable: false, data: "ApplicationDesc", title: "针对应用", sName: "ApplicationDesc" },
+                                {
+                                    orderable: false, data: "CreateTime", title: "发表日期", sName: "CreateTime", render: function (data, type, row, meta) {
+                                        return moment(data).format("YYYY-MM-DD HH:mm:ss")
+                                    }
+                                },
+                                { orderable: false, data: "Title", title: "推文标题", sName: "Title" },
+                                { orderable: false, data: "CommentCount", title: "评论数", sName: "CommentCount" },
+                                { orderable: false, data: "Zan", title: "点赞数", sName: "Zan" },
+                                { orderable: false, data: "View", title: "阅读次数", sName: "View" },
+                                {
+                                    orderable: false, data: "BusinessId", title: "操作", sName: "BusinessId", render: function (data, type, row, meta) {
+                                        var button = "<a style='cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.gotoEdit(" + data + ")'>" + "编辑" + "</a>";
+                                        button += "<a style='cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.gotoReply(" + data + ")'>" + "评论管理" + "</a>"
+                                        button += "<a style='cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.deleteArticle(" + data + ")'>" + "删除" + "</a>"
+                                        return button;
+                                    }
+                                }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                    grid.reload();
+                },
+                resetFitler: function () {
+                    this.filter = {
+                        Title: null,
+                        StartTime: null,
+                        EndTime: null
+                    };
+                },
+                gotoEdit: function (id) {
+                    var param = "";
+                    if (id) {
+                        param = "?articleId=" + id;
+                    }
+                    window.open("@Url.Action("Edit")" + param);
+                },
+                gotoReply: function (id) {
+                    window.open("@Url.Action("ArticleReplyList")?articleId=" + id);
+                },
+                beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.StartTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.filter.StartTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.EndTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.filter.EndTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                deleteArticle: function (id) {
+                    var self = this;
+                    $.confirm("您确定要删除该推文吗？", function (ok) {
+                        if (ok) {
+                            $.ajax({
+                                type: 'GET',
+                                url: '@Url.Action("ArticleDelete")?articleId=' + id,
+                                success: function (data) {
+                                    if (data.Data && data.Success) {
+                                        $.showSuccess("删除成功！");
+                                        self.reloadData();
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+
+    </script>
+}

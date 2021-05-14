@@ -1,0 +1,78 @@
+﻿@charset "utf-8";
+/*强制table不换行*/
+.table th,
+.table td{
+    /*white-space:nowrap;*/
+}
+.table .radio{
+    margin-top:0 !important;
+    margin-bottom:0 !important;
+}
+table.dataTable td.select-checkbox.select-radio:before{
+    border-radius:50%;
+    -webkit-border-radius:50%;
+    -moz-border-radius:50%;
+}
+table.dataTable tr.selected td.select-checkbox.select-radio:after{
+    content:'\f111' !important;
+    margin-left:-7px !important;
+}
+/*查询条件*/
+.nav-tabs > li.widget-header{
+    margin-bottom:0;
+    float:none;
+    text-align:right;
+}
+/*重置样式*/
+.select2 {
+    width: 100%;
+}
+
+.padding0{
+    padding:0 !important;
+}
+.fl{
+    float:left !important;
+}
+.fr{
+    float:right !important;
+}
+
+.date{
+    cursor:default !important;
+}
+
+/* 重置navbar */
+.navbar {
+    min-height: 60px;
+}
+.navbar .navbar-inner,
+.navbar .navbar-inner .navbar-header .navbar-account .setting a .icon{
+    min-height: 60px;
+}
+.navbar,
+.navbar .sidebar-collapse,
+.navbar .navbar-inner .navbar-header .navbar-account,
+.navbar .navbar-inner .navbar-header .navbar-account .account-area > li,
+.navbar .navbar-inner .navbar-header .navbar-account .setting a,
+.navbar .navbar-inner .navbar-header .navbar-account .account-area .login-area{
+    height: 60px;
+}
+.navbar .sidebar-collapse .collapse-icon,
+.navbar .sidebar-collapse.active .collapse-icon{
+    padding: 18.5px 5px;
+    min-width: 35px;
+}
+.navbar .navbar-brand small img{
+    margin-top: 8px;
+}
+.navbar .navbar-inner .navbar-header .navbar-account .account-area .login-area{
+    padding: 15.5px 20px 16.5px 20px;
+}
+.navbar .navbar-inner .navbar-header .navbar-account .account-area > li .dropdown-arrow:before{
+    top: -71px;
+}
+.navbar .navbar-inner .navbar-header .navbar-account .account-area > li .dropdown-menu.dropdown-login-area > li.dropdown-footer{
+    border-top: 0;
+    width:120px;
+}

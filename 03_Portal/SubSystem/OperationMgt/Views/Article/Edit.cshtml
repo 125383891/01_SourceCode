@@ -1,0 +1,314 @@
+﻿@using LYY.Article.Entity
+@using System.Configuration
+@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 推文管理</title>
+    @BuildCssRef("~/Content/third/webuploader/webuploader.css")
+    <style>
+        [v-cloak]
+        {
+            display: none;
+        }
+    </style>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">推文管理</li>
+    <li id="MenuLevel2" class="active">推文浏览</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget" v-cloak>
+            <div class="widget-header border-left">
+                <span class="widget-caption">推文编辑</span>
+            </div>
+            <div class="widget-body">
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label><span class="red">*</span>针对应用：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <select class="form-control select-fix100" v-model="article.Application">
+                                <option v-for="item in application" :value="item.value">
+                                    {{item.label}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label><span class="red">*</span>推文标题：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model.trim="article.Title" placeholder="推文标题" type="text" maxlength="2000" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>   
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label><span class="red">*</span>封面图片：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <img :src="article.PicUrl | preview" v-if="article.PicUrl!==null" style="width:100px;height:100px;margin-bottom:10px;" />
+                            <vue-uploader ref="upload"
+                                          :server-url="window.uploadUrl"
+                                          :accept="{
+                                                        title: 'Images',
+                                                        extensions: 'gif,jpg,jpeg,bmp,png',
+                                                        mimeTypes: 'image/*'
+                                                    }"
+                                          :multiple="false"
+                                          :file-single-size-limit="1024 * 1024 * 10"
+                                          :allow-duplicate="false"
+                                          v-on:upload-success="handleUploadSuccess">
+                                <button type="button" style="height:30px;width:80px;" class="btn btn-primary">上传文件</button>
+                            </vue-uploader>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-8 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>推文内容：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <script id="editor" type="text/plain" style="width: 100%; height: 500px;">
+                            </script>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-8 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>推文对象：</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <div class="row">
+                                <div class="col-sm-3" v-for="(item,index) in departmentList">
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox"
+                                               v-bind:disabled="hasDisabled"
+                                               v-bind:checked="item.Checked"
+                                               v-on:change="departmentChange(item)"
+                                               :value="item.BusinessId"
+                                               :id="index"
+                                               class="colored-blue"
+                                               style="margin-top:11px">
+                                        {{item.Name}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>推送用户：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model.trim="article.UserIds" placeholder="多个用户请用|隔开" type="text" maxlength="500" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="widget-footer tc">
+                <button v-on:click="save" type="button" class="btn btn-lg btn-primary">保存</button>
+            </div>
+        </div>
+        @Html.Partial("~/Views/Components/VueUpload.cshtml")
+    </div>
+
+}
+@section rsFooter {
+    @BuildJsRef("~/Content/third/webuploader/webuploader.nolog.min.js")
+    @BuildJsRef("~/Content/third/ueditor/ueditor.config.js")
+    @BuildJsRef("~/Content/third/ueditor/ueditor.all.js")
+    @BuildJsRef("~/Content/third/ueditor/lang/zh-cn/zh-cn.js")
+    <script type="text/javascript">
+
+       var vue= new Vue({
+            el: '#container',
+            data: {
+                application: [{
+                    label: '请选择',
+                    value: null,
+                }, {
+                    label: '@ArticleEnums.LegalComplianceApplication.GetDescription()',
+                    value: @((int)ArticleEnums.LegalComplianceApplication),
+                }, {
+                    label: '@ArticleEnums.ExpertManagement.GetDescription()',
+                    value: @((int)ArticleEnums.ExpertManagement),
+                }],
+                article: {
+                    BusinessId: @(ViewBag.ArticleId ?? 0),
+                    Application: null,
+                    Title: null,
+                    PicUrl: null,
+                    Content: null,
+                    ArticleDepartmentList: [],
+                    UserIds:null,
+                },
+                departmentList: [],
+                UE: null
+            },
+           mounted: function () {
+               this.UE = UE.getEditor('editor');
+               this.initDepartment();
+               this.initEditor();
+
+           },
+           computed: {
+               hasDisabled: function () {
+                   return this.article.BusinessId !== 0;
+               },
+               allChecked: function () {
+                   var list = _.filter(this.departmentList, function (item) { return item.BusinessId !== 0; })
+                   return _.every(list, function (item) {
+                       return item.Checked === true;
+                   });
+               },
+               checkedList: function () {
+                   return _.filter(this.departmentList, function (item) { return item.BusinessId !== 0 && item.Checked === true; })
+               }
+           },
+           methods: {
+               handleUploadSuccess: function (file, res) {
+                   if (res.code === 1) {
+                       this.article.PicUrl = res.data.newName;
+                   }
+                },
+                initEditor: function () {
+                    var self = this;
+                    this.UE.addListener('ready', function (editor) {
+                        if (self.article.BusinessId !== 0) {
+                            self.loadArticleDetail();
+                        }
+                    });
+                },
+                initDepartment: function () {
+                    var self = this;
+                    $.ajax({
+                        type: "GET",
+                        async: false,
+                        contentType: 'application/json',
+                        url: "@Url.Action("DepartmentList")",
+                        success: function (res) {
+                            if (res.Data && res.Success) {
+                                var dataList = _.union([{ BusinessId: 0, Name: '全选' }], res.Data);
+                                _.each(dataList, function (item) {
+                                    item.Checked = false;
+                                    self.departmentList.push(item);
+                                });
+
+                            }
+                        }
+                    });
+                },
+                loadArticleDetail: function () {
+                    var self = this;
+                    $.ajax({
+                        type: "GET",
+                        contentType: 'application/json',
+                        url: "@Url.Action("GetById")?articleId=" + self.article.BusinessId,
+                        success: function (res) {
+                            if (res.Data && res.Success) {
+                                var data = res.Data;
+                                self.article.Application = data.Application === 0 ? null : data.Application;
+                                self.article.Title = data.Title;
+                                self.article.PicUrl = data.PicUrl;
+                                self.article.Content = data.Content;
+                                self.article.UserIds = data.UserIds;
+                                self.UE.setContent(self.article.Content || '')
+                                self.article.ArticleDepartmentList = data.ArticleDepartmentList;
+                                _.each(self.departmentList, function (item) {
+                                    item.Checked = _.some(self.article.ArticleDepartmentList, function (data) { return data.DepartmentId === item.BusinessId });
+                                });
+                            }
+                        }
+                    });
+                },
+                departmentChange: function (item) {
+                    item.Checked = !item.Checked
+                    if (item.BusinessId === 0 && item.Checked) {
+                        _.each(this.departmentList, function (item) {
+                            item.Checked = true
+                        });
+                    } else if (item.BusinessId === 0 && !item.Checked) {
+                        _.each(this.departmentList, function (item) {
+                            item.Checked = false
+                        });
+                    } else if (item.BusinessId !== 0 && this.allChecked) {
+                        this.departmentList[0].Checked = true;
+                    } else if (item.BusinessId !== 0 && !this.allChecked) {
+                        this.departmentList[0].Checked = false;
+                    }
+                    this.article.ArticleDepartmentList = _.map(this.checkedList, function (item) { return { ArticleId: 0, DepartmentId: item.BusinessId } });
+                },
+                checkValid: function (callBack) {
+                    if (!this.article.Application) {
+                        return $.showWarning("请选择推文应用");
+                    }
+                    if (!this.article.Title) {
+                        return $.showWarning("请输入推文标题");
+                    }
+                    if (!this.article.PicUrl) {
+                        return $.showWarning("请上传图文封面图");
+                    }
+                    if (!this.article.Content) {
+                        return $.showWarning("请输入推文内容");
+                    }
+                    if (!this.article.ArticleDepartmentList.length === 0) {
+                        return $.showWarning("请至少勾选一个单位");
+                    }
+                    if (this.article.Title.length > 2000) {
+                        return $.showWarning("推文标题最大长度2000");
+                    }
+                    callBack();
+                },
+                save: function () {
+                    var self = this;
+                    self.article.Content = self.UE.getContent()
+                    this.checkValid(function () {
+                        var requestUrl = '';
+                        if (self.article.BusinessId != 0) {
+                            requestUrl = '@Url.Action("ArticleUpdate")';
+                        } else {
+                            requestUrl = '@Url.Action("ArticleInsert")';
+                        }
+                        self.article.Content = escape(self.article.Content);
+                        $.ajax({
+                            type: 'POST',
+                            contentType: 'application/json',
+                            url: requestUrl,
+                            data: JSON.stringify(self.article),
+                            success: function (data) {
+                                if (data.Success) {
+                                    $.showSuccess("保存成功！");
+                                    var id = null;
+                                    if (self.article.BusinessId) {
+                                        id = self.article.BusinessId;
+                                    } else {
+                                        id = data.Data;
+                                    }
+                                    setTimeout(function () {
+                                        location.href = "@Url.Action("Edit")?articleId=" + id;
+                                    }, 500)
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+        });
+
+    </script>
+}

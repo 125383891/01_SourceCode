@@ -1,0 +1,312 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 论坛活动管理</title>
+
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">论坛活动管理</li>
+    <li id="MenuLevel2" class="active">论坛活动浏览</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span v-on:click="showDialog(null)" class="btn btn-yellow btn-xs">新增</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="planTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th>序号</th>
+                            <th>活动名称</th>
+                            <th>开始时间</th>
+                            <th>截至时间</th>
+                            <th>活动状态</th>
+                            <th>活动说明</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <!--活动编辑模态框-->
+        @Html.Partial("_Edit")
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+
+       var vue= new Vue({
+            el: '#container',
+            data: {
+                dialogTitle: '新增活动信息',
+                plan: {
+                    BusinessId: 0,
+                    PlanName: null,
+                    BeginTime: null,
+                    EndTime: null,
+                    IsClose: false,
+                    PlanDesc: null,
+                    ScoreBase: null,
+                    ScoreExtra: null,
+                    ScoreEffect: null,
+                    ScoreStar1: null,
+                    ScoreStar2: null,
+                    ScoreStar3: null,
+                    ScoreStar4: null,
+                    ScoreStar5: null,
+                    ScoreGrab: null,
+                    ScoreOther1: null,
+                    ScoreOther2: null,
+                    ScoreOther3: null
+                }
+            },
+            mounted: function () {
+                this.dataTableInit();
+                this.reloadData();
+                this.hideDialog();
+            },
+            methods: {
+                dataTableInit: function () {
+                    $table = $("#planTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "/OperationMgt/Plan/SearchList",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                {
+                                    orderable: false, title: "序号", render: function (data, type, full, meta) {
+                                        return meta.row + meta.settings._iDisplayStart + 1;
+                                    }
+                                },
+                                { orderable: false, data: "PlanName", title: "活动名称", sName: "PlanName" },
+                                {
+                                    orderable: false, data: "BeginTime", title: "开始时间", sName: "BeginTime", render: function (data, type, row, meta) {
+                                        return moment(data).format("YYYY-MM-DD HH:mm:ss")
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "EndTime", title: "截至时间", sName: "EndTime", render: function (data, type, row, meta) {
+                                        return moment(data).format("YYYY-MM-DD HH:mm:ss")
+                                    }
+                                },
+                                { orderable: false, data: "PlanEnumDesc", title: "活动状态", sName: "PlanEnumDesc" },
+                                { orderable: false, data: "PlanDesc", title: "活动说明", sName: "PlanDesc" },
+                                {
+                                    orderable: false, data: "BusinessId", title: "操作", sName: "BusinessId", render: function (data, type, row, meta) {
+                                        return "<a style='cursor: pointer' href='javascript:void(0)' onclick='vue.showDialog("+data+")'>" + "编辑" + "</a>";
+                                    }
+                                }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.reload();
+                },
+                hideDialog: function () {
+                    var self = this;
+                    $("#planEditModal").on('hide.bs.modal', function () {
+                        self.resetPlan();
+                    });
+                },
+                showDialog: function (id) {
+                    if (id) {
+                        this.dialogTitle = '编辑活动信息';
+                        this.plan.BusinessId = id;
+                        this.loadPlanDetail();
+                    } else {
+                        this.dialogTitle = '新增活动信息'
+                    }
+                    $("#planEditModal").modal()
+                },
+                loadPlanDetail: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: "/OperationMgt/Plan/GetById/" + this.plan.BusinessId,
+                        dataType: "json",
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                var data = data.Data;
+                                self.plan.PlanName = data.PlanName;
+                                self.plan.BeginTime = moment(data.BeginTime).format("YYYY-MM-DD HH:mm:ss");
+                                self.plan.EndTime = moment(data.EndTime).format("YYYY-MM-DD HH:mm:ss");
+                                self.plan.IsClose = data.IsClose;
+                                self.plan.PlanDesc = data.PlanDesc;
+                                self.plan.ScoreBase = data.ScoreBase;
+                                self.plan.ScoreExtra = data.ScoreExtra;
+                                self.plan.ScoreEffect = data.ScoreEffect;
+                                self.plan.ScoreStar1 = data.ScoreStar1;
+                                self.plan.ScoreStar2 = data.ScoreStar2;
+                                self.plan.ScoreStar3 = data.ScoreStar3;
+                                self.plan.ScoreStar4 = data.ScoreStar4;
+                                self.plan.ScoreStar5 = data.ScoreStar5;
+                                self.plan.ScoreGrab = data.ScoreGrab;
+                                self.plan.ScoreOther1 = data.ScoreOther1;
+                                self.plan.ScoreOther2 = data.ScoreOther2;
+                                self.plan.ScoreOther3 = data.ScoreOther3;
+                            }
+                        }
+                    });
+                },
+                resetPlan: function () {
+                    this.plan = {
+                        BusinessId: 0,
+                        PlanName: null,
+                        BeginTime: null,
+                        EndTime: null,
+                        IsClose: false,
+                        PlanDesc: null,
+                        ScoreBase: null,
+                        ScoreExtra: null,
+                        ScoreEffect: null,
+                        ScoreStar1: null,
+                        ScoreStar2: null,
+                        ScoreStar3: null,
+                        ScoreStar4: null,
+                        ScoreStar5: null,
+                        ScoreGrab: null,
+                        ScoreOther1: null,
+                        ScoreOther2: null,
+                        ScoreOther3: null
+                    };
+                },
+                checkValid: function (callBack) {
+                    if (!this.plan.PlanName) {
+                        return $.showWarning("请输入活动名称");
+                    }
+                    if (!this.plan.BeginTime) {
+                        return $.showWarning("请选择活动开始时间");
+                    }
+                    if (!this.plan.EndTime) {
+                        return $.showWarning("请选择活动结束时间");
+                    }
+                    if (this.plan.PlanName.length > 200) {
+                        return $.showWarning("活动名称最大长度为200");
+                    }
+                    if (this.plan.PlanDesc && this.plan.PlanDesc.length > 2000) {
+                        return $.showWarning("活动说明最大长度为2000");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreBase)) {
+                        return $.showWarning("发表人基础分非数字类型");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreExtra)) {
+                        return $.showWarning("额外奖励分最大值非数字类型");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreEffect)) {
+                        return $.showWarning("效果评估分最大值非数字类型");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreStar1)) {
+                        return $.showWarning("办理人1星积分非数字类型");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreStar2)) {
+                        return $.showWarning("办理人2星积分非数字类型");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreStar3)) {
+                        return $.showWarning("办理人3星积分非数字类型");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreStar4)) {
+                        return $.showWarning("办理人4星积分非数字类型");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreStar5)) {
+                        return $.showWarning("办理人5星积分非数字类型");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreGrab)) {
+                        return $.showWarning("抢单积分非数字类型");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreOther1)) {
+                        return $.showWarning("其他积分设置1非数字类型");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreOther2)) {
+                        return $.showWarning("其他积分设置2非数字类型");
+                    }
+                    if (this.plan.ScoreBase && isNaN(this.plan.ScoreOther3)) {
+                        return $.showWarning("其他积分设置3非数字类型");
+                    }
+                    callBack();
+                },
+                save: function () {
+                    var self = this;
+                    this.checkValid(function () {
+                        var requestUrl = '';
+                        if (self.plan.BusinessId != 0) {
+                            requestUrl = '@Url.Action("PlanUpdate")';
+                        } else {
+                            requestUrl = '@Url.Action("PlanInsert")';
+                        }
+                        $.ajax({
+                            type: 'POST',
+                            contentType: 'application/json',
+                            url: requestUrl,
+                            data: JSON.stringify(self.plan),
+                            success: function (data) {
+                                if (data.Data && data.Success) {
+                                    $.showSuccess("保存成功！");
+                                    $("#planEditModal").modal("hide");
+                                    self.reloadData();
+                                }
+                            }
+                        });
+                    });
+                },
+                beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.plan.BeginTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.plan.BeginTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.plan.EndTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.plan.EndTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                }
+            }
+        });
+
+    </script>
+}

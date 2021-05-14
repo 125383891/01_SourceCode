@@ -1,0 +1,40 @@
+﻿<div class="modal fade bs-example-modal-lg" id="subjectViewEditModal" tabindex="-1" role="dialog"
+     aria-labelledby="subjectViewEditModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">
+                    ×
+                </button>
+                <h4 class="modal-title">热度编辑</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>热度：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="subject.view" placeholder="热度值" type="text" maxlength="10" class="form-control input-no-clear" />
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>主题分类：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <select class="form-control select-fix100" v-model="subject.cat_id">
+                                <option v-for="item in catListEdit" :value="item.Id">
+                                    {{item.Lable}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" v-on:click="updateView">确认</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>

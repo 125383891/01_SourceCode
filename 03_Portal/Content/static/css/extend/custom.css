@@ -1,0 +1,52 @@
+﻿/***
+UI Loading
+***/
+.loading-message {
+  display: inline-block;
+  min-width: 125px;
+  margin-left: -60px;
+  padding: 10px;
+  margin: 0 auto;
+  color: #000 !important;
+  font-size: 13px;
+  font-weight: 400;
+  text-align: center;
+  vertical-align: middle;
+}
+.loading-message.loading-message-boxed {
+  border: 1px solid #ddd;
+  background-color: #eee;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+}
+.loading-message > span {
+  line-height: 20px;
+  vertical-align: middle;
+}
+
+/*
+    DataTable th 表头文字不换行
+*/
+.dataTable th{
+    white-space: nowrap;
+}
+
+/*
+* DataTable td强制换行
+*/
+.dataTable td{
+    word-break:break-all;
+}
+
+/*
+* modal-content字体颜色调整
+*/
+.modal-content{
+    color:#444
+}

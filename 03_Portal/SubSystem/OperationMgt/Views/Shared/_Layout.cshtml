@@ -1,0 +1,373 @@
+﻿@using YZ.Utility
+@using YZ.Utility.Web
+@using LYY.AuthCenter.Entity
+@using System.Configuration
+@{
+
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-type" content="charset=utf-8" />
+
+    @BuildCssRef("~/Content/static/css/bootstrap.min.css")
+    @BuildCssRef("~/Content/static/css/dataTables.bootstrap.css")
+    @BuildCssRef("~/Content/static/css/font-awesome.min.css")
+    @BuildCssRef("~/Content/static/css/beyond.min.css")
+    @BuildCssRef("~/Content/static/css/typicons.min.css")
+    @BuildCssRef("~/Content/static/css/animate.min.css")
+    @BuildCssRef("~/Content/static/css/extend/ms360.css")
+    @BuildCssRef("~/Content/static/css/extend/reset.css?v=1")
+    @BuildCssRef("~/Content/static/css/extend/common.css")
+    @BuildCssRef("~/Content/third/My97DatePicker/skin/default/datepicker.css")
+
+    @BuildJsRef("/Content/third/skins.min.js")
+    @BuildJsRef("/Content/third/jquery-1.12.1.js")
+    @BuildJsRef("/Content/third/bootstrap.min.js")
+    @BuildJsRef("/Content/third/slimscroll/jquery.slimscroll.min.js")
+    @BuildJsRef("/Content/third/jquery.json.min.js")
+    @BuildJsRef("/Content/third/beyond.js")
+    @BuildJsRef("/Content/third/bootbox/bootbox.js")
+    @BuildJsRef("/Content/third/tagsinput/bootstrap-tagsinput.js")
+    @BuildJsRef("/Content/third/toastr/toastr.js")
+    @BuildJsRef("/Content/third/blockui/jquery.blockUI.js")
+    @BuildJsRef("/Content/third/json2.js")
+    @BuildJsRef("/Content/third/jquery-extension.js")
+    @BuildJsRef("/Content/third/ui.js")
+    @BuildJsRef("/Content/third/layer-v3.0.3/layer/layer.js")
+    @BuildJsRef("/Content/third/jquery.dotdotdot.js")
+    @BuildJsRef("/Content/third/datatable/jquery.dataTables.min.js")
+    @BuildJsRef("/Content/third/datatable/dataTables.bootstrap.min.js")
+    @BuildJsRef("/Content/third/datatable/datatable-helper.js")
+    @BuildJsRef("/Content/third/My97DatePicker/WdatePicker.js")
+    @BuildJsRef("/Content/third/moment.min.js")
+    @BuildJsRef("/Content/third/vue.min.js")
+    @BuildJsRef("/Content/third/underscore/underscore.min.js")
+    @RenderSection("rsHeader", required: false)
+    <script>
+        window.previewUrl = "@ConfigurationManager.AppSettings["PreviewUrl"].ToString()";
+        window.uploadUrl = "@ConfigurationManager.AppSettings["UploadUrl"].ToString()";
+        Vue.filter("preview", function (val) {
+            return previewUrl + val;
+        });
+    </script>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="loader"></div>
+    </div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <div class="navbar-container">
+                <div class="navbar-header pull-left">
+                    <a href="@Url.Action("HomePage","System")" class="navbar-brand">
+                        <small style="line-height:55px;font-size:18px;">
+                            <!--<img src="~/Content/img/logo.png" alt="" />-->
+                            四川公司-企业号后台管理
+                        </small>
+                    </a>
+                </div>
+                <div class="sidebar-collapse" id="sidebar-collapse" title="收起菜单" style="left:220px;">
+                    <i class="collapse-icon fa fa-bars"></i>
+                </div>
+                <div class="navbar-header pull-right">
+                    <div class="navbar-account">
+                        <ul class="account-area">
+                            <li>
+                                <a class="login-area dropdown-toggle" data-toggle="dropdown">
+                                    <div class="avatar" title="查看我的设置">
+                                        <img src="~/Content/img/avatars/adam-jansen.jpg">
+                                    </div>
+                                    <section>
+                                        <h2>
+                                            <span class="profile">
+                                                <span>@AuthManager.ReadUserInfo().UserDisplayName</span>
+                                            </span>
+                                        </h2>
+                                    </section>
+                                </a>
+                                <ul class="pull-right dropdown-menu dropdown-arrow dropdown-login-area" style="min-width:120px;">
+                                    <li class="username">
+                                        <a>admin</a>
+                                    </li>
+                                    <li class="dropdown-footer">
+                                        <a id="btnChangePassWord" href="javascript:void(0);">修改密码</a>
+                                    </li>
+                                    <li class="dropdown-footer">
+                                        <a href="@Url.Action("Logout", "Login")">安全退出</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="progress" style="height:2px; "></div>
+    </div>
+    <div class="main-container container-fluid">
+        <div class="page-container">
+            <div class="page-sidebar" id="sidebar">
+                <ul class="nav sidebar-menu">
+                    @{
+                        var menuList = AuthManager.GetUserMenuList();
+                        var catalogList = menuList.FindAll(p => p.Type == (int)MenuTypeEnums.Catalog);
+                        foreach (var item in catalogList)
+                        {
+                            var tempList = menuList.FindAll(p => item.SysNo.Equals(p.ParentSysNo));
+                            if (tempList.Count > 0)
+                            {
+                                <li id="@item.MenuName" class="">
+                                    <a href="#" class="menu-dropdown">
+                                        <i class="menu-icon @item.IconStyle"></i>
+                                        <span class="menu-text">@item.MenuName</span>
+                                        <i class="menu-expand"></i>
+                                    </a>
+
+                                    <ul class="submenu">
+                                        @{
+                                            foreach (var data in tempList)
+                                            {
+                                                <li id="@data.MenuName" class="">
+                                                    <a href="@data.LinkPath" class="menu-dropdown">
+                                                        <span class="menu-text">@data.MenuName</span>
+                                                    </a>
+                                                </li>
+                                            }
+                                        }
+                                    </ul>
+                                </li>
+                            }
+                        }
+                    }
+                    @*<li id="系统管理" class="">
+                            <a href="#" class="menu-dropdown">
+                                <i class="menu-icon glyphicon glyphicon-user"></i>
+                                <span class="menu-text">系统管理</span>
+                                <i class="menu-expand"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li id="用户管理" class="">
+                                    <a href="/OperationMgt/System/UserList" class="menu-dropdown">
+                                        <span class="menu-text">用户管理</span>
+                                    </a>
+                                </li>
+                                <li id="角色管理" class="">
+                                    <a href="/OperationMgt/System/RoleList" class="menu-dropdown">
+                                        <span class="menu-text">角色管理</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li id="论坛活动管理" class="">
+                            <a href="#" class="menu-dropdown">
+                                <i class="menu-icon glyphicon glyphicon-user"></i>
+                                <span class="menu-text">论坛活动管理</span>
+                                <i class="menu-expand"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li id="论坛活动浏览" class="">
+                                    <a href="/OperationMgt/Plan/List" class="menu-dropdown">
+                                        <span class="menu-text">论坛活动浏览</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li id="文档管理" class="">
+                            <a href="#" class="menu-dropdown">
+                                <i class="menu-icon glyphicon glyphicon-user"></i>
+                                <span class="menu-text">文档管理</span>
+                                <i class="menu-expand"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li id="文档浏览" class="">
+                                    <a href="/OperationMgt/Document/List" class="menu-dropdown">
+                                        <span class="menu-text">文档浏览</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li id="推文管理" class="">
+                            <a href="#" class="menu-dropdown">
+                                <i class="menu-icon glyphicon glyphicon-user"></i>
+                                <span class="menu-text">推文管理</span>
+                                <i class="menu-expand"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li id="推文浏览" class="">
+                                    <a href="/OperationMgt/Article/List" class="menu-dropdown">
+                                        <span class="menu-text">推文浏览</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li id="论坛主题管理" class="">
+                            <a href="#" class="menu-dropdown">
+                                <i class="menu-icon glyphicon glyphicon-user"></i>
+                                <span class="menu-text">论坛主题管理</span>
+                                <i class="menu-expand"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li id="主题列表浏览" class="">
+                                    <a href="/OperationMgt/Subject/List" class="menu-dropdown">
+                                        <span class="menu-text">主题列表浏览</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>*@
+                </ul>
+            </div>
+            <div id="chatbar" class="page-chatbar">
+            </div>
+            <div class="page-content">
+                <div class="page-breadcrumbs page-header position-relative">
+                    <ul class="breadcrumb">
+                        <li>
+                            <i class="fa fa-home"></i>
+                            <a href="/OperationMgt/System/HomePage">首页</a>
+                        </li>
+                        @RenderSection("rsNavigation", required: true)
+                    </ul>
+                    <div class="header-buttons">
+                        <a class="sidebar-toggler" href="#">
+                            <i class="fa fa-arrows-h" title="平铺"></i>
+                        </a>
+                        <a class="refresh" id="refresh-toggler" href="#" onclick="window.location.reload()">
+                            <i class="glyphicon glyphicon-refresh" title="刷新"></i>
+                        </a>
+                        <a class="fullscreen" id="fullscreen-toggler" href="#">
+                            <i class="glyphicon glyphicon-fullscreen" title="全屏"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="page-body">
+                    @RenderSection("rsContent", required: true)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--修改密码模特对话框-->
+    <div id="changePasswordModal" style="display:none;">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <input id="txtOldPwd" type="password" class="form-control" data-model="oldPwd" placeholder="原密码" />
+                </div>
+                <div class="form-group">
+                    <input id="txtNewPwd" type="password" class="form-control" data-model="newPwd" placeholder="新密码" />
+                </div>
+                <div class="form-group">
+                    <input id="txtConfirmNewPwd" type="password" class="form-control" data-model="confirmNewPwd" placeholder="确认密码" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $().ready(function () {
+            if ($("#MenuLevel1")) {
+                $("#" + $("#MenuLevel1").text()).addClass("open");
+            }
+            if ($("#MenuLevel2")) {
+                $("#" + $("#MenuLevel2").text()).addClass("active");
+            }
+        });
+        window.bootboxDialog = function (id) {
+            if (@(AuthManager.ReadUserInfo().UserSysNo)=== id) {
+                $.confirm("您如果修改当前账号密码，需要重新登录是否继续修改？", function (ok) {
+                    if (ok) {
+                        dialog()
+                    }
+                });
+            } else {
+                dialog();
+            }
+            function dialog() {
+                bootbox.dialog({
+                    message: $("#changePasswordModal").html(),
+                    title: "修改密码",
+                    className: "modal-darkorange",
+                    onEscape: true,
+                    backdrop: true,
+                    buttons: {
+                        success: {
+                            label: "确认",
+                            className: "btn-blue",
+                            callback: function () {
+                                var getModel = function () {
+                                    var container = $(".modal-content");
+
+                                    return $.buildEntity(container);
+                                };
+
+                                var model = getModel();
+                                var check = function () {
+                                    if (model.oldPwd == "") {
+                                        $.showWarning("请输入原密码！");
+                                        return false;
+                                    } else if (model.newPwd == "") {
+                                        $.showWarning("请输入新密码！");
+                                        return false;
+                                    } else if (model.confirmNewPwd == "") {
+                                        $.showWarning("请输入确认密码！");
+                                        return false;
+                                    } else if (model.newPwd != model.confirmNewPwd) {
+                                        $.showWarning("新密码与确认密码不一致！");
+                                        return false;
+                                    }
+
+                                    return true;
+                                };
+
+                                var changePwd = function () {
+                                    var data = {
+                                        BusinessId: id,
+                                        OldPassword: model.oldPwd,
+                                        NewPassword: model.newPwd
+                                    }
+                                    $.ajax({
+                                        type: 'POST',
+                                        contentType: 'application/json;charset=UTF-8',
+                                        url: "@Url.Action("UpdatePassword", "System")",
+                                        data: JSON.stringify(data),
+                                        dataType: "json",
+                                        success: function (data) {
+                                            if (data.Data && data.Success) {
+                                                $.showSuccess("密码修改成功");
+                                                if (@(AuthManager.ReadUserInfo().UserSysNo)=== id) {
+                                                    setTimeout(function () {
+                                                        window.location.href = "@Url.Action("Logout","Login")";
+                                                    }, 200)
+                                                } else {
+                                                    bootbox.hideAll();
+                                                }
+                                            }
+                                        }
+                                    });
+                                };
+
+                                if (!check()) {
+                                    return false;
+                                }
+                                changePwd();
+                                return false;
+                            }
+                        },
+                        "取消": {
+                            className: "btn-danger",
+                            callback: function () { }
+                        }
+                    }
+                });
+            }
+        }
+        $("#btnChangePassWord").on('click', function () {
+            window.bootboxDialog(@AuthManager.ReadUserInfo().UserSysNo);
+        });
+    </script>
+
+    @RenderSection("rsFooter", required: false)
+</body>
+</html>

@@ -1,0 +1,289 @@
+@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 柱形图</title>
+@BuildJsRef("~/Content/third/echarts.common.min.js")
+<style type="text/css">
+/*tab 切换 start*/
+.toggle-tab{
+	height: 100%;
+	width: 100%;
+}
+.toggle-tab .tab-top{
+    width: 100%;
+    height: 30px;
+    line-height: 30px;
+    padding: 10px 0 5px;
+}
+.tab-buttons{
+    width: 154px;
+	height:30px;
+	border:2px solid #5eb5e2;
+	border-radius:5px;
+	box-sizing:border-box;
+	background:#fff;
+	float: right;
+	margin-right: 10px;
+	min-width: 126px;
+}
+.tab-buttons > span{
+	float: left;
+    text-align: center;
+    height: 100%;
+    line-height: 25px;
+    color: #7b7b7b;
+    white-space: nowrap;
+    padding: 0 5px;
+    cursor: pointer;
+    border-left: 2px solid #5eb5e2;
+    min-width: 50px;
+    outline: none;
+}
+.tab-buttons > span:first-child{
+	border-left: 0;
+}
+.tab-buttons > span.selected{
+	background: #5eb5e2;
+	color: #fff;
+}
+.toggle-tab .tab-content{
+	position: absolute;
+	top: 45px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 8;
+}
+.toggle-tab .tab-content > div{
+	width: 100%;
+	height: 100%;
+}
+/*tab 切换 start*/
+.button {
+    border: 1px solid #2CBB87;
+    height: 34px;
+    line-height: 20px;
+    min-width: 60px;
+    color: #fff;
+    background-color: #2CBB87;
+    letter-spacing: 1px;
+    text-indent: 2px;
+    padding: 0 5px;
+    font-size: 12px;
+    font-family: "微软雅黑";
+    cursor: pointer;
+    outline: none;
+}
+.basicTab{
+	margin-top:60px;
+}
+</style>
+}
+
+@section rsNavigation {
+<li id="MenuLevel1">柱形图</li>
+}
+
+@section rsContent {
+	<div id="container">
+		<div class="row">
+            <div class="col-sm-3 col-xs-12">
+            	<div class="margin_left5" style="position: relative;display: inline-block;vertical-align: middle;">
+	            <span class="tab-buttons" >
+	                <span onclick="statis.togglePeriod(2,this)" class="">日</span>
+	                <span onclick="statis.togglePeriod(3,this)" class="">月</span>
+	                <span onclick="statis.togglePeriod(4,this)" class="selected">年</span>
+	            </span>
+            	</div>
+            </div>
+            <div class="col-sm-6 col-xs-12">
+				<div class="col-sm-3 control-label"><label>创建日期：</label></div>
+				<div class="col-sm-4">
+	                <div class="input-group non-padding">
+	                    <input type="text"
+	                           readonly
+	                           style="cursor:pointer"
+	                           v-model="filter.StartTime"
+	                           placeholder="开始时间"
+	                           class="form-control"
+	                           v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+	                    <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+	                </div>
+				</div>
+				<div class="col-sm-4">
+					<div class="input-group non-padding">
+						<input type="text"
+							   readonly
+							   style="cursor:pointer"
+							   v-model="filter.EndTime"
+							   placeholder="结束时间"
+							   class="form-control"
+							   v-on:click="endTimePickerClick('endTime')" id="endTime">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+					</div>
+				</div>
+            </div>
+			<div class="form-group col-sm-3 col-xs-12" align="right">
+				<div class="col-sm-4 control-label">
+					<button class="btn btn-primary button">查询</button>
+				</div> 
+			</div>
+       	</div>
+		<div class="basicTab">
+			<div id="lineChart"  style="width: 960px;height: 360px;">1</div>
+		</div>
+    </div>
+
+}
+@section rsFooter {
+<script type="text/javascript">
+       var vue= new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    StartTime: null,
+                    EndTime: null
+                }
+            },
+            mounted: function () {
+				var dom=document.getElementById("lineChart");
+				var data=[{"enterpriseId":"01f27a713ed74849a7eae3e094e87990","enterpriseName":"(test)四川威恳通讯技术有限公司","enterpriseShortName":"威恳通讯","mixGoal":5265.504999999999,"value":0.0,"ele":15044.3,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"0679599e25ce4e3f946770f6e4546734","enterpriseName":"（test）四川明志鑫业电子有限公司","enterpriseShortName":"明志鑫业","mixGoal":0.0,"value":0.04,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"22bfeb23905145178706e76c84ae83b7","enterpriseName":"(test)泸州鑫福化工有限公司","enterpriseShortName":"鑫福化工","mixGoal":0.0,"value":0.5,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"2597b497ee5a493db1b87d4665121553","enterpriseName":"四川省华景光电科技有限公司","enterpriseShortName":"华景光电","mixGoal":83402.2,"value":0.0,"ele":238292.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"369db26baaa441f3a336af04eab55862","enterpriseName":"(test)四川武骏特种玻璃制品有限公司","enterpriseShortName":"武骏玻璃","mixGoal":0.0,"value":0.83,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"3f34a2a6344a4e09924a87d9f1b82336","enterpriseName":"test四川捷荣科技有限公司2","enterpriseShortName":"捷荣科技1","mixGoal":0.0,"value":0.0,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"417760d0a57a49af910c89ec77fe9a02","enterpriseName":"(test)四川北方硝化棉股份有限公司","enterpriseShortName":"北化股份","mixGoal":0.0,"value":0.0,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"5ea1b4b8864645d88fe08b7ed2903aeb","enterpriseName":"（test）猪八戒总部","enterpriseShortName":"猪八戒","mixGoal":0.0,"value":0.0,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"75c4d1ec6ddd4d279f0014319ceeb6eb","enterpriseName":"(test)泸州市隆利威科技有限公司","enterpriseShortName":"隆利威科","mixGoal":0.0,"value":2.0,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"79859d09e9b8493098cfd80593b6ae9c","enterpriseName":"泸州京川集团有限公司","enterpriseShortName":"京川集团","mixGoal":39472.439999999995,"value":0.0,"ele":112778.4,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"8f3039c3a29a405bbff9813ae7aecbc6","enterpriseName":"（test）四川汇丰源通科技有限公司","enterpriseShortName":"汇丰源通","mixGoal":0.0,"value":0.5,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"8f3039c3a29a405bbff9813ae7aecbc9","enterpriseName":"四川友信达科技有限公司","enterpriseShortName":"友信达","mixGoal":0.0,"value":0.0,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"a128fec8673841c68730e6056693da17","enterpriseName":"四川汇丰源通科技有限公司","enterpriseShortName":"汇丰源通","mixGoal":0.0,"value":0.0,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"b51c6ef9221a484c85149d367d6934c7","enterpriseName":"（test）泸州长开区","enterpriseShortName":"泸州长开区","mixGoal":0.0,"value":0.21,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"bc9b97ff7d434156987288e688ca5cfe","enterpriseName":"四川威恳通讯技术有限公司","enterpriseShortName":"威恳通讯","mixGoal":0.0,"value":0.0,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"c99b08c5aa674d708415e27fbf097b6e","enterpriseName":"(test)泸州大鹏包装实业有限公司","enterpriseShortName":"大鹏包装","mixGoal":0.0,"value":0.0,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"ee47a6c616d1453d9c3b71cae695bc5c","enterpriseName":"四川华能达科技有限公司","enterpriseShortName":"华能达","mixGoal":0.0,"value":0.0,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0},{"enterpriseId":"fe20825ed671482480c0557d1912294d","enterpriseName":"(test)合盛硅业（泸州）有限公司","enterpriseShortName":"合盛硅业test","mixGoal":0.0,"value":1.0,"ele":0.0,"water":0.0,"gas":0.0,"prediction":0.0}]
+				this.initLine(dom,data)
+            },
+            methods: {
+                beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.StartTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.filter.StartTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.EndTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.filter.EndTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                initLine: function(dom,data){//设备用电分析
+					var xAxisData=[];
+					var seData1=[];
+					var seData2=[];
+					for(var i=0;i<data.length;i++){
+						if(data[i].mixGoal>0){
+							var name=data[i].enterpriseShortName?data[i].enterpriseShortName:data[i].enterpriseName;
+							xAxisData.push(name);
+							seData1.push(data[i].mixGoal.toFixed(3));
+							seData2.push(data[i].prediction.toFixed(3));
+						}
+					}
+					var myChart = echarts.init(dom);
+					var option = {
+					    tooltip : {
+					        trigger: 'axis'
+					    },
+					    legend: {
+					        data:['综合能耗（kgce）','产值预估（万元）'],
+					        x:'center',
+					        y:'bottom',
+					        itemWidth:7,
+					        itemHeight:7
+					    },
+					    calculable : true,
+					    xAxis : [
+					        {
+					            type : 'category',
+			   		            boundaryGap : true,//类目起始和结束两端空白策略
+					            data : xAxisData
+					        }
+					    ],
+					    yAxis : [
+					   		{
+					            name : '综合能耗（kgce）',
+					            type : 'value'
+					        },
+					        {
+					            name : '产值预估（万元）',
+					            type : 'value'
+					        }
+					    ],
+					    series : [
+					        {
+					            name:'综合能耗（kgce）',
+					            type:'bar',
+					            data:seData1,
+					            barWidth:'30',
+					            markPoint : {
+					                data : [
+					                    {type : 'max', name: '最大值'},
+					                    {type : 'min', name: '最小值'}
+					                ]
+					            },
+					            markLine : {
+					                data : [
+					                    {type : 'average', name: '平均值'}
+					                ]
+					            },
+					            itemStyle:{
+					            	normal:{
+					            		color:'#5684b6'
+					            	}
+					            },
+					            barCategoryGap:'30%'
+					        },
+					        {
+					            name:'产值预估（万元）',
+					            type:'bar',
+					            data:seData2,
+					            barWidth:'30',
+					            markPoint : {
+					                data : [
+					                    {type : 'max',name : '年最高'},
+					                    {type : 'min',name : '年最低'}
+					                ]
+					            },
+					            markLine : {
+					                data : [
+					                    {type : 'average', name : '平均值'}
+					                ]
+					            },
+					            itemStyle:{
+					            	normal:{
+					            		color:'#b45854'
+					            	}
+					            },
+					            barCategoryGap:'30%',
+					            yAxisIndex:1
+					        }
+					    ]
+					};
+					if (option && typeof option === "object") {
+					    myChart.setOption(option, true);
+					}
+				}
+            }
+       });
+</script>
+}

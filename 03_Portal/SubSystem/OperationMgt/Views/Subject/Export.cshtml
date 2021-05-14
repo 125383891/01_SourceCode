@@ -1,0 +1,133 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 论坛主题管理</title>
+
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">论坛主题管理</li>
+    <li id="MenuLevel2" class="active">排行榜导出</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-lg-5 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>创建日期：</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.StartTime"
+                                       placeholder="开始时间"
+                                       class="form-control"
+                                       v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.EndTime"
+                                       placeholder="结束时间"
+                                       class="form-control"
+                                       v-on:click="endTimePickerClick('endTime')" id="endTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <div class="widget-buttons">
+                    <span v-on:click="exportRanking " class="btn btn-yellow btn-xs">导出排行榜</span>
+                    <span v-on:click="exportAvg" class="btn btn-yellow btn-xs">导出单位平均未读数</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+
+       var vue= new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    StartTime: null,
+                    EndTime: null
+                },
+            },
+            mounted: function () {
+            },
+            methods: {
+                resetFitler: function () {
+                    this.filter = {
+                        StartTime: null,
+                        EndTime: null
+                    };
+                },
+                exportRanking: function () {
+                    $.exportExcel('@Url.Action("SearchExportRanking")', [{ name: 'queryString', value: $.toJSON(this.filter) }]);
+                },
+                exportAvg: function () {
+                    $.exportExcel('@Url.Action("SearchExportAvg")', [{ name: 'queryString', value: $.toJSON(this.filter) }]);
+                },
+                beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function(dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.StartTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                          self.filter.StartTime = null;
+                            self.$emit('input', '');
+                        }
+                    });
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function(dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.EndTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                            self.filter.EndTime = null;
+                            self.$emit('input', '');
+                        }
+                    });
+                }
+            }
+        });
+
+    </script>
+}

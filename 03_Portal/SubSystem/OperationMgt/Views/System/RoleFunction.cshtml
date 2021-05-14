@@ -1,0 +1,140 @@
+﻿@Model
+@using Newtonsoft.Json
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 权限列表</title>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">系统管理</li>
+    <li id="MenuLevel2" class="active">角色管理</li>
+}
+
+@section rsContent {
+    <div class="widget" id="container">
+        <div class="widget-header border-left">
+            <span class="widget-caption">权限列表</span>
+            <div class="widget-buttons">
+                <span v-on:click="save" class="btn btn-yellow btn-xs">保存</span>
+            </div>
+        </div>
+        <div class="widget-body">
+            <table class="table table-hover table-striped table-bordered" id="documentTable">
+                <thead class="bordered">
+                    <tr>
+                        <th>序号</th>
+                        <th>菜单名称</th>
+                        <th>权限</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item,index) in list">
+                        <td v-text="index+1" width="5%"></td>
+                        <td v-text="item.MenuName" width="10%"></td>
+                        <td width="75%">
+                            <template v-for="(func,cIndex) in item.FunctionList">
+                                <label class="checkbox-inline" :for="index+''+cIndex">
+                                    <input type="checkbox"
+                                           v-model="func.Checked"
+                                           :value="func.FunctionId"
+                                           :id="index+''+cIndex"
+                                           class="colored-blue">
+                                    {{func.FunctionName}}
+                                </label>
+                            </template>
+                        </td>
+                    </tr>
+                    <tr v-if="list.length === 0">
+                        <td colspan="3" style="text-align:center;">暂无数据</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section rsFooter {
+    <script type="text/javascript">
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                dialogTitle: '新增角色',
+                list: [],
+                roleId:@Model,
+                roleFunctionList: JSON.parse(@Html.Raw(Json.Encode(ViewBag.RoleFunctionList)))
+            },
+            mounted: function () {
+                this.initFunctionList();
+            },
+            methods: {
+                initFunctionList: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: "@Url.Action("SearchMenuFunctionList")",
+                        dataType: "json",
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                var data = data.Data;
+                                self.list = self.convertGroupData(data);
+                            }
+                        }
+                    });
+                },
+                convertGroupData: function (data) {
+                    var self = this;
+                    var groupData = _.groupBy(data, 'MenuId');
+                    var menuIds = _.keys(groupData);
+                    var list = [];
+                    _.each(menuIds, function (item) {
+                        var temp = _.find(data, function (p) { return p.MenuId === parseInt(item) });
+                        var tempList = _.filter(data, function (p) { return p.MenuId === parseInt(item) });
+                        var entity = {
+                            MenuId: item,
+                            MenuName: temp.MenuName,
+                            FunctionList: _.map(tempList, function (p) {
+                                return {
+                                    MenuId: p.MenuId,
+                                    MenuName: p.MenuName,
+                                    FunctionId: p.FunctionId,
+                                    FunctionName: p.FunctionName,
+                                    Checked: _.some(self.roleFunctionList, function (x) {
+                                        return x.FunctionId === p.FunctionId
+                                    })
+                                }
+                            }),
+                        }
+                        list.push(entity);
+                    });
+                    return list;
+                },
+                save: function () {
+                    var self = this;
+                    var dataList = {
+                        RoleId: self.roleId,
+                        FunctionList:[],
+                    };
+                    _.each(self.list, function (item) {
+                        var list = _.filter(item.FunctionList, function (data) { return data.Checked });
+                        if (list.length > 0) {
+                            var tempList = _.pluck(list, 'FunctionId');
+                            dataList.FunctionList = _.union(dataList.FunctionList, tempList);
+                        }
+                    });
+                    $.ajax({
+                        type: 'POST',
+                        url: "@Url.Action("BatchInsertRoleFunctionList")",
+                        contentType:'application/json',
+                        dataType: "json",
+                        data: $.toJSON(dataList),
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                $.showSuccess("保存成功")
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,56 @@
+﻿
+<div class="modal fade bs-example-modal-lg" id="RankSettingViewEditModal" tabindex="-1" role="dialog"
+     aria-labelledby="RankSettingViewEditModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">
+                    ×
+                </button>
+                <h4 class="modal-title">编辑</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>段位等级：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.rank_level" name="rank_level" v-on:change="validNum" placeholder="段位等级" readonly="readonly" type="number" class="form-control input-no-clear" />
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label><span class="red">*</span>段位名称：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.rank_name" name="rank_name" placeholder="段位名称" type="text" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>最低积分要求：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.score_require" name="score_require" v-on:change="validNum1" placeholder="最低积分要求" type="number" class="form-control input-no-clear" />
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>最低正确率要求：</label>
+                        </div>
+                        <div class="col-md-3 col-xs-3 col-lg-3">
+                            <input v-model="detail.accuracy_require" name="accuracy_require" v-on:change="validNum" placeholder="最低正确率要求" type="number" class="form-control input-no-clear" />
+                        </div>
+                        <div style="line-height: 35px;" class="col-md-1 col-xs-1 col-lg-1">
+                            %
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" v-on:click="save">保存</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>

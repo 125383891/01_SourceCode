@@ -1,0 +1,184 @@
+﻿<script type="text/x-template" id="vue-uploader">
+    <div ref="root" style="width:80px;height:30px;">
+        <slot>
+            <button type="button" style="height:30px;width:80px;" class="btn btn-primary">上传附件</button>
+        </slot>
+    </div>
+</script>
+<script>
+    // TODO: 绑定ref的地方加个display-inline-block的class
+    Vue.component('vue-uploader', {
+        template: '#vue-uploader',
+        props: {
+            appName: {
+                type: String,
+                default: function () {
+                    return 'default';
+                }
+            },
+            accept: {
+                type: Object,
+                default: function () {
+                    return {}
+                }
+            },
+            serverUrl: {
+                type: String,
+                default: ''
+            },
+            // 上传最大数量 默认为20
+            fileNumLimit: {
+                type: Number,
+                default: 20
+            },
+            // 大小限制 默认100M
+            fileSingleSizeLimit: {
+                type: Number,
+                default: 1024 * 1024 * 100
+            },
+            multiple: {
+                type: Boolean,
+                default: false
+            },
+            allowDuplicate: {
+                type: Boolean,
+                default: false
+            },
+            // 已上传的文件名称列表， 用于重复性检查
+            uploadFileNameList: {
+                type: Array,
+                default: function () {
+                    return []
+                }
+            },
+            uploadAcceptHandler: {
+                type: Function,
+                default: null
+            },
+            beforeFileQueuedHandler: {
+                type: Function,
+                default: null
+            }
+        },
+        mounted: function () {
+            this.$nextTick(function () {
+                this.initWebUploader()
+            })
+        },
+        methods: {
+            initWebUploader: function () {
+                var self = this
+                var serverUrl = '';
+                if (self.serverUrl) {
+                    serverUrl = self.serverUrl;
+                } else {
+                    serverUrl = '/Upload/UploadFile';
+                }
+                // 初始化Web Uploader
+                var uploader = WebUploader.create({
+                    // 选完文件后，是否自动上传。
+                    auto: true,
+                    duplicate: self.allowDuplicate,
+                    // swf文件路径
+                    swf: '~/Content/third/webuploader/Uploader.swf',
+
+                    // 文件接收服务端。
+                    server: serverUrl,
+
+                    // 选择文件的按钮。可选。
+                    // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+                    pick: {
+                        id: self.$refs['root'],
+                        multiple: self.multiple
+                    },
+                    dnd: self.$refs['root'],
+                    // 允许上传的文件类型
+                    accept: self.accept,
+                    fileNumLimit: self.fileNumLimit,
+                    fileSingleSizeLimit: self.fileSingleSizeLimit
+                });;
+
+                // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+                uploader.on('uploadSuccess', function (file, response) {
+                    self.$emit('upload-success', file, response)
+                    $.hideBlockUI()
+                });
+
+                // 文件上传失败，显示上传出错。
+                uploader.on('uploadError', function (file, reason) {
+                    self.$emit('upload-error', file, reason);
+                    uploader.removeFile(file)
+                    $.hideBlockUI()
+                });
+
+                // 当某个文件上传到服务端响应后，会派送此事件来询问服务端响应是否有效。如果此事件handler返回值为false, 则此文件将派送server类型的uploadError事件。
+                uploader.on('uploadAccept', function (obj, ret) {
+                    if (self.uploadAcceptHandler instanceof Function) {
+                        return self.uploadAcceptHandler(obj, ret);
+                    }
+                    if (ret.code && ret.description) {
+                        $.showWarning(ret.description);
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                // 完成上传完了，成功或者失败，先删除进度条。
+                uploader.on('uploadComplete', function (file, response) {
+                    self.$emit('upload-complete', file, response)
+                });
+
+                uploader.on('error', function (type) {
+                    var errorMessage = '';
+                    if (type === 'F_DUPLICATE') {
+                        errorMessage = '该文件已存在，请勿重复上传';
+                    } else if (type === 'F_EXCEED_SIZE') {
+                        errorMessage = '文件大小不能超过' + self.fileSingleSizeLimit / (1024 * 1024) + 'M';
+                    } else if (type === 'Q_EXCEED_NUM_LIMIT') {
+                        errorMessage = '文件上传已达到最大上限数, 如需上传新附件，请先删除旧的附件';
+                    } else if (type === 'Q_TYPE_DENIED') {
+                        errorMessage = '上传失败，不支持的文件类型！请检查后重新上传';
+                    } else {
+                        errorMessage = '未知错误，请联系管理员'
+                    }
+                    $.hideBlockUI()
+                    $.showWarning(errorMessage);
+                    self.$emit('error', errorMessage);
+                });
+                uploader.on('uploadProgress', function (file, response) {
+                    self.$emit('upload-progress', file, response)
+                });
+                uploader.on('fileQueued', function (file) {
+                    self.$emit('file-queued', file)
+                });
+                uploader.on('beforeFileQueued', function (file) {
+                    $.showBlockUI()
+                    if (self.beforeFileQueuedHandler instanceof Function) {
+                        if (!self.beforeFileQueuedHandler(file)) {
+                            self.$emit('file-queued-failed', file);
+                            return false;
+                        }
+                    }
+                    // 如果不允许duplicate那么执行相应的检查逻辑。
+                    if (!this.options.duplicate) {
+                        if (_.includes(self.uploadFileNameList, file.name)) {
+                            $.showWarning('该文件已存在，请勿重复上传');
+                            self.$emit('file-queued-failed', file);
+                            return false;
+                        }
+                    }
+                    if (file.name.length > 255) {
+                        $.showWarning('附件名称长度（包括扩展名）不能超过255');
+                        self.$emit('file-queued-failed', file);
+                        return false;
+                    }
+                    return true;
+                });
+                self.$on('remove-file', function (file) {
+                    uploader.removeFile(file);
+                });
+            }
+        }
+    })
+</script>

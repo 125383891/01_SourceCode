@@ -1,0 +1,525 @@
+﻿@{
+}
+@using LYY.Document.Entity
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 文档管理</title>
+
+    @BuildCssRef("~/Content/static/css/jstree/style.min.css")
+    @BuildCssRef("~/Content/third/webuploader/webuploader.css")
+    @BuildJsRef("~/Content/third/webuploader/webuploader.nolog.min.js")
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">文档管理</li>
+    <li id="MenuLevel2" class="active">文档浏览</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="row">
+            <div class="col-lg-12 col-sm-12 col-xs-12">
+                <div class="row">
+                    <div class="col-lg-3 col-sm-3 col-xs-12">
+                        <div class="widget">
+                            <div class="widget-header bordered-bottom">
+                                <span class="widget-caption">目录管理</span>
+                                <div class="widget-buttons">
+                                    <button class="btn btn-primary btn-xs" v-on:click="showFolderDialog('add')">新增</button>
+                                    <button class="btn btn-primary btn-xs" v-on:click="showFolderDialog('edit')">编辑</button>
+                                    <button class="btn btn-primary btn-xs" v-on:click="removeFolder">删除</button>
+                                </div>
+                            </div>
+                            <div class="widget-body">
+                                <div id="menuTree">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-9 col-sm-9 col-xs-12">
+                        <div class="widget">
+                            <div class="row mt15">
+                                <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                                    <div class="col-sm-4 control-label">
+                                        <label>用户类型：</label>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <select class="form-control select-fix100" v-model="params.usertag">
+                                            <option v-for="item in usertagList" :value="item.id">
+                                                {{item.name}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group col-lg-3 col-sm-6 col-xs-12" style="padding-left:35px;">
+                                    <div class="col-sm-4 control-label">
+                                        <button class="btn btn-primary" v-on:click="search()">查询</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="widget-header bordered-bottom">
+                                <span class="widget-caption">查询结果</span>
+                                <div class="widget-buttons">
+                                    <button id="btnAdd" class="btn btn-primary btn-xs" v-on:click="showDocumentDialog()"><i class="fa fa-plus"></i>文件上传</button>
+                                </div>
+                            </div>
+                            <div class="widget-body">
+                                <table class="table table-hover table-striped table-bordered" id="documentTable">
+                                    <thead class="bordered">
+                                        <tr>
+                                            <th>序号</th>
+                                            <th>类型</th>
+                                            <th>名称</th>
+                                            <th>扩展名</th>
+                                            <th>文件大小</th>
+                                            <th>用户类型</th>
+                                            <th>要求学习时间</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(item,index) in list">
+                                            <td v-text="item.OrderNum"></td>
+                                            <td v-text="item.TypeDesc"></td>
+                                            <td v-text="item.Name"></td>
+                                            <td v-text="item.ExtensionName"></td>
+                                            <td v-text="item.Size"></td>
+                                            <td v-text="item.UsertagDesc"></td>
+                                            <td v-text="item.Minminutes"></td>
+                                            <td>
+                                                <a href="javascript:void(0)" v-if="item.Type===@((int)DocumentEnums.Directory)" v-on:click="listEdit(item)">编辑</a>
+                                                <a href="javascript:void(0)" v-if="item.Type===@((int)DocumentEnums.File)" v-on:click="fileEdit(item)">编辑</a>
+                                                <a href="javascript:void(0)" v-on:click="listRemove(item)">删除</a>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="list.length === 0">
+                                            <td colspan="6" style="text-align:center;">暂无数据</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @Html.Partial("_EditFolder")
+        @Html.Partial("_EditDocument")
+        @Html.Partial("~/Views/Components/VueUpload.cshtml")
+    </div>
+}
+@section rsFooter {
+    @BuildJsRef("/Content/third/jstree/jstree.min.js")
+    <script type="text/javascript">
+       var grid = new Datatable();
+       var vue= new Vue({
+            el: '#container',
+            data: {
+                treeDialogTitle: '新增目录信息',
+                selectedTree: null,
+                list: [],
+                fileFlg:null,//文件新增/编辑状态
+                accept:{
+                    title: 'UploadFile',
+                    extensions: 'doc,docx,xls,xlsx,txt,pdf,ppt,pptx'
+                },
+                folder: {
+                    BusinessId: 0,
+                    ParentId: null,
+                    Name: null,
+                    OrderNum: 1
+                },
+                document: {
+                    Id:0,
+                    BusinessId: 0,
+                    FolderId: 0,
+                    Name: null,
+                    Type: null,
+                    Url: null,
+                    Size: null,
+                    Words: null,
+                    OrderNum: 1,
+                    HasUpload: false,
+                    IsStudyMaterials: true,
+                    Usertag: null,
+                    Minminutes: null
+
+                }, usertagList: [{ name: '不限制', id: null },
+                    { name: '评审专家', id: 9 },
+                    { name: '采购人员', id: 10 },
+                    { name: '代理人员', id: 11 }],
+                usertagcheckList:[
+                    { name: '评审专家', id: 9 },
+                    { name: '采购人员', id: 10 },
+                    { name: '代理人员', id: 11 }],
+                params: {
+                    usertag: null
+                }
+            },
+            mounted: function () {
+                this.initTree();
+                this.hideDialogEvent();
+                this.showDialogEvent()
+            },
+            methods: {
+                initTree: function () {
+                    var self = this;
+                    $("#menuTree").jstree({
+                        "core": {
+                            "themes": {
+                                "responsive": false
+                            },
+                            'data': {
+                                'url': function (node) {
+                                    return '@Url.Action("SearchTreeList")';
+                                }
+                            }
+                        },
+                        "plugins": ["types"],
+                        "types": {
+                            "default": {
+                                "icon": "jstree-icon jstree-themeicon fa fa-folder icon-state-warning icon-lg jstree-themeicon-custom"
+                            }
+                        }
+                    });
+
+                    $("#menuTree").on('loaded.jstree Event', function (e, data) {
+                        self.selectedTree = $("#menuTree").jstree('get_selected', true)[0];
+                        self.loadDocumentList(self.selectedTree.id);
+                    })
+                    $("#menuTree").on('select_node.jstree', function (e, data) {
+                        self.selectedTree = $("#menuTree").jstree('get_selected', true)[0];
+                        self.loadDocumentList(self.selectedTree.id);
+                    });
+                },
+                hideDialogEvent: function () {
+                    var self = this;
+                    $("#folderEditModal").on('hide.bs.modal', function () {
+                        self.resetFolder();
+                    });
+                    $("#documentEditModal").on('hide.bs.modal', function () {
+                        self.resetDocument();
+                    });
+                },
+                showDialogEvent: function () {
+                    var self = this;
+                    // 由于vue加载dom生命周期与bootstrap modal加载生命周期不同，导致上传文件按钮获取不到高度，因此在弹出加载的时候事件监听
+                    $("#documentEditModal").on('shown.bs.modal', function () {
+                        self.$refs['upload'].initWebUploader();
+                    });
+                },
+                loadDocumentList: function (folerId) {
+                    if(!folerId){
+                        return $.showWarning("请选择目录，再进行操作")
+                    }
+                    var self = this;
+                    var $table = $("#documentTable");
+                    $.ajax({
+                        url: "@Url.Action("SearchDoucmentList")?usertag=" + this.params.usertag + "&folderId=" + folerId,
+                        type: "GET",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                self.list = data.Data;
+                            }
+                        }
+                    });
+                },
+                refreshTree: function () {
+                    $("#menuTree").jstree("refresh");
+                },
+                showFolderDialog: function (actionType) {
+                    if(this.selectedTree === null){
+                       return $.showWarning("请选择目录，再进行操作")
+                    }
+                    if (actionType === 'add') {
+                        this.folder.ParentId = parseInt(this.selectedTree.id);
+                        this.dialogTitle = '新增目录信息'
+                        $("#folderEditModal").modal();
+                    } else if (actionType === 'edit') {
+                        if (this.selectedTree.parent === '#') {
+                            this.folder.ParentId = null
+                        } else {
+                            this.folder.ParentId = parseInt(this.selectedTree.parent);
+                        }
+                        this.folder.BusinessId = parseInt(this.selectedTree.id);
+                        this.dialogTitle = '编辑目录信息'
+                        this.loadFolderDetail();
+                    }
+
+                },
+                loadFolderDetail: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: "@Url.Action("GetById")?folderId=" + this.folder.BusinessId,
+                        dataType: "json",
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                var data = data.Data;
+                                self.folder.Name = data.Name;
+                                self.folder.OrderNum = data.OrderNum;
+                                $("#folderEditModal").modal();
+                            } else{
+                                return $.showWarning("目录数据已不存在，请刷新页面重试");
+                            }
+                        }
+                    });
+                },
+                resetFolder: function () {
+                    this.folder = {
+                        BusinessId: 0,
+                        ParentId: null,
+                        Name: null,
+                        OrderNum: 1
+                    };
+                },
+                resetDocument: function () {
+                    this.document = {
+                        BusinessId: 0,
+                        FolderId: 0,
+                        Name: null,
+                        Type: null,
+                        Url: null,
+                        Size: null,
+                        Words: null,
+                        OrderNum: 1,
+                        HasUpload: false,
+                    IsStudyMaterials: true,
+                    Usertag: null,
+                    Minminutes: null
+                    }
+                },
+                checkFolderValid: function (callBack) {
+                    if (!this.folder.Name) {
+                        return $.showWarning("请输入目录名称");
+                    }
+                    if (this.folder.Name.length > 255) {
+                        return $.showWarning("目录名称最大长度为255");
+                    }
+                    if (isNaN(this.folder.OrderNum)) {
+                        return $.showWarning("排序值非数字类型");
+                    }
+                    callBack();
+                },
+                checkDocumentValid: function (callBack) {
+                    if (!this.document.Usertag) {
+                        return $.showWarning("请选择用户类型!")
+                    }
+                     if (isNaN(this.document.OrderNum)) {
+                        return $.showWarning("排序值非数字类型");
+                    }
+                       if (this.document.words && this.document.words.length > 1000) {
+                        return $.showWarning("关键词最大长度为3000");
+                    }
+                    if (this.fileFlg=="add") {
+                        if (!this.document.HasUpload){
+                            return $.showWarning("请上传文件");
+                        }
+                    }
+                    callBack();
+                },
+                removeFolder: function () {
+                    var self = this;
+                    if(this.selectedTree === null){
+                        return $.showWarning("请选择目录，再进行操作")
+                    }
+                    if (this.selectedTree.parent === '#') {
+                        return $.showWarning("顶级目录不允许被删除");
+                    }
+                    $.confirm("您确定要删除该目录吗？请确保该目录为空目录", function (ok) {
+                        if (ok) {
+                            $.ajax({
+                                type: 'GET',
+                                url: '@Url.Action("FolderDelete")?folderId=' + self.selectedTree.id,
+                                success: function (data) {
+                                    if (data.Data && data.Success) {
+                                        $.showSuccess("删除成功！");
+                                        // 判断当前删除的节点是否还被选中。
+                                        self.refreshTree();
+                                        if(!$("#menuTree").jstree("is_selected",self.selectedTree)){
+                                            self.selectedTree = null;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
+                },
+                removeDocument: function(id) {
+                    var self = this;
+                    $.confirm("您确定要删除该文件吗？", function (ok) {
+                        if (ok) {
+                            $.ajax({
+                                type: 'GET',
+                                url: '@Url.Action("DocumentDelete")?docuemntId=' + id,
+                                success: function (data) {
+                                    if (data.Data && data.Success) {
+                                        $.showSuccess("删除成功！");
+                                        self.loadDocumentList(parseInt(self.selectedTree.id));
+                                    }
+                                }
+                            });
+                        }
+                    });
+                },
+                saveFolder: function () {
+                    var self = this;
+                    if(this.selectedTree === null){
+                        return $.showWarning("请选择目录，再进行操作")
+                    }
+                    this.checkFolderValid(function () {
+                        var requestUrl = '';
+                        if (self.folder.BusinessId != 0) {
+                            requestUrl = '@Url.Action("FolderUpdate")';
+                        } else {
+                            requestUrl = '@Url.Action("FolderInsert")';
+                        }
+                        self.folder.OrderNum = self.folder.OrderNum || 1;
+                        $.ajax({
+                            type: 'POST',
+                            contentType: 'application/json',
+                            url: requestUrl,
+                            data: JSON.stringify(self.folder),
+                            success: function (data) {
+                                if (data.Data && data.Success) {
+                                    $.showSuccess("保存成功！");
+                                    $("#folderEditModal").modal("hide");
+                                    self.refreshTree();
+                                }
+                            }
+                        });
+                    });
+                },
+                listEdit: function(data) {
+                    if(!$("#menuTree").jstree("get_node",data.BusinessId+"")){
+                        return $.showWarning("目录结构可能已被更新，请重新刷新页面进行操作")
+                    }
+                    this.selectedTree = $("#menuTree").jstree("get_node",data.BusinessId+"");
+                    this.showFolderDialog('edit');
+                },
+                fileEdit: function (item) {
+                    var self = this;
+                    $.ajax({
+                        type: 'POST',
+                        data: { id: item.Id },
+                        url: "@Url.Action("GetDocumentById")",
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                self.document= data.Data;
+                                self.showDocumentDialog('edit');
+                            } else{
+                                //return $.showWarning("");
+                            }
+                        }
+                    });
+                },
+                listRemove: function (data) {
+                    var directory= @((int)DocumentEnums.Directory);
+                    var file= @((int)DocumentEnums.File);
+                    if(data.Type === directory){
+                        if(!$("#menuTree").jstree("get_node",data.BusinessId+"")){
+                            return $.showWarning("目录结构可能已被更新，请重新刷新页面进行操作")
+                        }
+                        this.selectedTree = $("#menuTree").jstree("get_node",data.BusinessId+"");
+                        this.removeFolder();
+                    }
+                    else if(data.Type === file){
+                        this.removeDocument(data.BusinessId);
+                    }
+                },
+                showDocumentDialog: function (flg) {
+                    if (flg=="edit") {
+                        this.fileFlg = "edit";
+                    } else {
+                    if(this.selectedTree === null){
+                        return $.showWarning("请选择目录，再进行操作")
+                     }
+                     this.fileFlg = "add";
+                    this.document.FolderId = parseInt(this.selectedTree.id);
+                    }
+                    $("#documentEditModal").modal();
+
+                },
+                saveDocument: function () {
+                    var self = this;
+                    self.document.OrderNum = self.document.OrderNum || 1;
+                    if (this.fileFlg=="add") {
+                        if(this.selectedTree === null){
+                            return $.showWarning("请选择目录，再进行操作")
+                        }
+
+                        this.checkDocumentValid(function(){
+                            var requestUrl = '@Url.Action("DocumentInsert")';
+                            $.ajax({
+                                type: 'POST',
+                                contentType: 'application/json',
+                                url: requestUrl,
+                                data: JSON.stringify(self.document),
+                                success: function (data) {
+                                    if (data.Data && data.Success) {
+                                        $.showSuccess("保存成功！");
+                                        $("#documentEditModal").modal("hide");
+                                        self.loadDocumentList(parseInt(self.selectedTree.id));
+                                    }
+                                }
+                            });
+                        });
+                    } else {
+                        self.document.ParamEx = self.document.Id;
+                        this.checkDocumentValid(function(){
+                            var requestUrl = '@Url.Action("DocumentUpdate")';
+                            $.ajax({
+                                type: 'POST',
+                                contentType: 'application/json',
+                                url: requestUrl,
+                                data: JSON.stringify(self.document),
+                                success: function (data) {
+                                    if (data.Data && data.Success) {
+                                        $.showSuccess("保存成功！");
+                                        $("#documentEditModal").modal("hide");
+                                        self.loadDocumentList(parseInt(self.selectedTree.id));
+                                    }
+                                }
+                            });
+                        });
+                    }
+
+
+                },
+                handleUploadSuccess: function (file, res) {
+                    if (res.code === 1) {
+                        $.showSuccess("上传成功！");
+                        var data = res.data;
+                        this.document.Name = data.originName;
+                        this.document.Type = data.ext;
+                        this.document.Url = '/upload/' + data.newName;
+                        this.document.Size = data.size;
+                        this.document.HasUpload = true;
+                    }
+                },
+                search: function () {
+                    this.loadDocumentList(parseInt(this.selectedTree.id));
+                },
+                //验证数字
+                validNum: function (e) {
+                    let value = e.target.value;
+                    let mark = false;
+                    if (isNaN(value)) {
+                         $.showWarning("只能填入非负整数");
+                            mark = true;
+                    } else {
+                        value = parseInt(value);
+                        if ( value < 0) {
+                         $.showWarning("只能填入非负整数");
+                            mark = true;
+                        }
+                    }
+                    if (mark) {
+                        value = 0;
+                    }
+                    this.document.Minminutes = value;
+                },
+            }
+        });
+    </script>
+}

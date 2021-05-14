@@ -1,0 +1,100 @@
+.div_bg{
+    position:absolute;top:0px;left:0px;right:0px;bottom:0px;
+    background-image:url(../img/loginbg.jpg);
+    background-size:100% 100%;
+    background-repeat:no-repeat;
+    min-height:500px;
+    min-width:600px;
+    vertical-align: top;
+}
+.logo{
+    display:inline-block;
+    width:50px;
+    height:25px;
+    border:solid 2px #21bd0a;
+    line-height:25px;
+    color:#57dd0e;
+    font-weight:bold;
+    margin-right:10px;
+    background-color:#fff;
+}
+.div_main{
+    width:450px;
+    margin:50px auto;
+    z-index:2;
+    border-radius:25px;
+    box-shadow:0px 4px 4px #6b99b3;
+}
+    .div_main .login_head {
+        height: 45px;
+        font-size: 20px;
+        font-weight: bold;
+        line-height: 45px;
+        color: #fff;
+        text-align: left;
+        background-color: #509abf;
+        text-align:center;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        -webkit-border-top-left-radius: 20px;
+        -webkit-border-top-right-radius: 20px;
+    }
+.div_main .login_head img{
+    width:35px;
+    height:35px;
+    margin:0 15px;
+    vertical-align: middle;
+}
+.div_main .login_body{
+    background-color:#fff;
+    padding:20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    -webkit-border-bottom-left-radius: 20px;
+    -webkit-border-bottom-right-radius: 20px;
+    background-image:url(../img/loginbg2.png);
+    background-repeat: no-repeat;
+    background-position:right bottom;
+}
+.div_main .login_fields{
+    width:92%;
+    margin:0 auto 10px auto;
+    padding:5px;
+}
+.div_main .login_fields input{
+    border:none;
+    border-bottom:1px solid #ccc;
+    font-size:14px;
+    width:300px;
+    background-color:#fff;
+    padding:8px;
+}
+.div_main .login_fields img{
+    vertical-align: top;
+    margin:5px 5px 5px 0;
+}
+.div_main .login_fields .verifyCode{
+    width:180px !important;
+}
+.div_main .login_fields .login_img{
+    width:80px;height:30px;
+    margin:3px 0 0 5px !important;
+    cursor:pointer;
+    vertical-align:top;
+}
+.div_main .login_fields button{
+    background-color:#21d89d;
+    width:100%;
+    margin:0 auto;
+    font-size:16px;
+    font-weight:bold;
+    padding:6px;
+    color:#fff;
+    text-align:center;
+    border:0;
+    border-radius: 10px;
+    cursor:pointer;
+}
+.div_main .login_fields button:hover{
+    background-color:#1fbd8a;
+}

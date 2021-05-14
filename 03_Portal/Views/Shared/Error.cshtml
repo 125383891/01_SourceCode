@@ -1,0 +1,24 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Error</title>
+</head>
+<body>
+    <div>
+        @if (Model.Exception != null)
+        {
+            if (Model.Exception.HelpLink == "BizEx")
+            {
+                <p class="description">@Model.Exception.Message</p>
+            }
+        }
+    </div>
+</body>
+</html>

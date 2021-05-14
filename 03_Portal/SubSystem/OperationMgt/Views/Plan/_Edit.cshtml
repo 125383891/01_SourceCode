@@ -1,0 +1,199 @@
+﻿<div class="modal fade bs-example-modal-lg" id="planEditModal" tabindex="-1" role="dialog"
+     aria-labelledby="planEditModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">
+                    ×
+                </button>
+                <h4 class="modal-title" v-text="dialogTitle"></h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label><span class="red">*</span>活动名称：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.PlanName" placeholder="活动名称" type="text" maxlength="200" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label><span class="red">*</span>活动开始时间：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <div class="input-group" style="padding-left:0;padding-right:0">
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span><input type="text" readonly style="cursor:pointer" maxlength="200" v-model="plan.BeginTime" placeholder="活动开始时间" class="form-control" v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label><span class="red">*</span>活动结束时间：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <div class="input-group" style="padding-left:0;padding-right:0">
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                                <input type="text" readonly style="cursor:pointer" v-model="plan.EndTime" placeholder="活动结束时间" class="form-control" v-on:click="endTimePickerClick('endTime')" id="endTime">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>是否关闭：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input type="checkbox" v-model="plan.IsClose" class="colored-blue" style="margin-top:11px" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>活动说明：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <textarea class="form-control" maxlength="2000" v-model="plan.PlanDesc" rows="6" id="form-field-8" placeholder="活动说明"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>发表人基础分：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreBase" placeholder="发表人基础分" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>额外奖励分最大值：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreExtra" placeholder="额外奖励分最大值" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>效果评估分最大值：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreEffect" placeholder="效果评估分最大值" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>办理人1星积分：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreStar1" placeholder="办理人1星积分" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>办理人2星积分：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreStar2" placeholder="办理人2星积分" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>办理人3星积分：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreStar3" placeholder="办理人3星积分" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>办理人4星积分：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreStar4" placeholder="办理人4星积分" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>办理人5星积分：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreStar5" placeholder="办理人5星积分" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>抢单积分：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreGrab" placeholder="抢单积分" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>其他积分设置1：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreOther1" placeholder="其他积分设置1" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>其他积分设置2：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreOther2" placeholder="其他积分设置2" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>其他积分设置3：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="plan.ScoreOther3" placeholder="其他积分设置3" type="text" maxlength="15" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" v-on:click="save">确认</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>

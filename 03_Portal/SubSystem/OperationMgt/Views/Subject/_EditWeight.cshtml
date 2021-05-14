@@ -1,0 +1,30 @@
+﻿<div class="modal fade bs-example-modal-lg" id="subjectWeightEditModal" tabindex="-1" role="dialog"
+     aria-labelledby="subjectWeightEditModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">
+                    ×
+                </button>
+                <h4 class="modal-title">重要置顶编辑</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group col-md-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>重要置顶：</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input v-model="subject.weight" placeholder="重要置顶值" type="text" maxlength="10" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" v-on:click="updateWeight">确认</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>

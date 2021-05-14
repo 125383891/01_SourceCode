@@ -1,0 +1,217 @@
+@using LYY.Report.Entity
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 主题分类统计</title>
+    @BuildJsRef("~/Content/third/echarts.common.min.js")
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">快车道查询统计</li>
+    <li id="MenuLevel2" class="active">主题分类统计</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>所属单位：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.DepartmentId">
+                                <option v-for="item in departmentList" :value="item.BusinessId">
+                                    {{item.Name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>发表日期：</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer;min-width:100px;"
+                                       v-model="filter.StartTime"
+                                       placeholder="开始时间"
+                                       class="form-control"
+                                       v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer;min-width:100px;"
+                                       v-model="filter.EndTime"
+                                       placeholder="结束时间"
+                                       class="form-control"
+                                       v-on:click="endTimePickerClick('endTime')" id="endTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-2 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="searchData">查询</button>
+                        </div>
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="resetFilter">重置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="widget">
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="basicTab">
+                        <div id="lineChart" style="width: 100%;height: 360px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                departmentList:[],
+                filter: {
+                    DepartmentId: null,
+                    StartTime: '@DateTime.Now.ToString("yyyy-1-1")',
+                    EndTime:'@DateTime.Now.ToString("yyyy-MM-dd")'
+                },
+                option:{
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: [],
+                            axisTick: {
+                                alignWithLabel: true
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                        }
+                    ],
+                    series: [{
+                        data: [],
+                        type: 'bar',
+                        barWidth: '15%',
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'top'
+                            }
+                        },
+                    }]
+                },
+                chartList: [],
+                list:[],
+                myChart: null
+            },
+            watch:{
+                chartList: function () {
+                    this.refreshChart();
+                }
+            },
+            mounted: function () {
+                this.myChart = echarts.init(document.getElementById("lineChart"));
+                this.initDepartment();
+                this.searchData();
+            },
+            methods: {
+                resetFilter: function () {
+                    this.filter= {
+                        DepartmentId: null,
+                        StartTime: '@DateTime.Now.ToString("yyyy-1-1")',
+                        EndTime:'@DateTime.Now.ToString("yyyy-MM-dd")'
+                    }
+                },
+                beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.StartTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.filter.StartTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.EndTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function (dp) {
+                            self.filter.EndTime = null;
+                            self.$emit('input', '');
+                        }
+                    })
+                },
+                searchData: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'POST',
+                        contentType:'application/json',
+                        url: '@Url.Action("QuerySubjectStatistics")',
+                        data: $.toJSON(self.filter),
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                self.chartList = data.Data
+                            }
+                        }
+                    });
+                },
+                refreshChart: function () {
+                    var self = this;
+                    var xAxis = _.pluck(self.chartList, "Key");
+                    var data = _.pluck(self.chartList, "Value");
+                    self.option.xAxis[0].data = xAxis;
+                    self.option.series[0].data = data;
+                    self.myChart.setOption(self.option, true);
+                },
+                initDepartment: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("GetDepartmentList")',
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                self.departmentList = _.union([{ BusinessId: null, Name: '全选' }], data.Data);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,409 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 考试配置管理</title>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">模拟考试</li>
+    <li id="MenuLevel2" class="active">考试配置管理</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget">
+                <div class="widget-footer tc">
+                    <span id="btnQuery" class="btn btn-info" v-on:click="search"><i class="glyphicon glyphicon-search"></i>查询</span>
+                    @*&nbsp;&nbsp;<span id="btnReset" class="btn btn-primary-o" v-on:click="resetFitler"><i class="fa fa-undo"></i>重置</span>*@
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span class="btn btn-palegreen btn-xs" v-on:click="addData">新增</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="examTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th style="text-align:center;"><input onfocus="this.select()" type="checkbox" /></th>
+                            <th style="text-align:center;">序号</th>
+                            <th style="text-align:center;">考试名称</th>
+                            <th style="text-align:center;">用户类型</th>
+                            <th style="text-align:center;">指导语</th>
+                            <th style="text-align:center;">开始日期</th>
+                            <th style="text-align:center;">结束日期</th>
+                            <th style="text-align:center;">是否启用</th>
+                            <th style="text-align:center;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <!--活动编辑模态框-->
+
+        @Html.Partial("_ExamEditView")
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var BeginDate = '@DateTime.Now.ToString("yyyy-MM-dd")';
+        var EndDate = '@DateTime.Now.AddDays(30).ToString("yyyy-MM-dd")';
+        var grid = new Datatable();
+        function getTableSelectData() {
+            var trs = grid.getSelectedRowsData(false);
+            var result = [];
+            for (var i = 0; i < trs.length; i++) {
+                 result.push(trs[i].id);
+            }
+
+            return result;
+        }
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                filter: {
+
+                },
+                detail: {
+                    document_id: null,
+                    order_num: null
+
+                },
+                is_beginList: [
+                    { name: '启用', id: 1 },
+                    { name: '禁用', id: 0 }],
+                order_modeList: [
+                    { name: '题库顺序', id: 1 },
+                    { name: '先按题型顺序然后按题库顺序', id: 2 },
+                    { name: '按题型顺序然后随机顺序', id: 3 },
+                    { name: '完全随机', id: 4 }
+                ],
+                          usertagcheckList: [
+                    { name: '评审专家', id: 9 },
+                    { name: '采购人员', id: 10 },
+                    { name: '代理人员', id: 11 }]
+            },
+            mounted: function () {
+                this.init();
+                this.dataTableInit();
+                this.reloadData();
+            },
+            methods: {
+                 beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function(dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.detail.begin_time = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                            self.detail.begin_time = null;
+                            self.$emit('input', '');
+                        }
+                    });
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function (dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.detail.end_time = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                            self.detail.end_time = null;
+                            self.$emit('input', '');
+                        }
+                    });
+                },
+               search: function () {
+                    //this.copyFilter = _.extend(this.copyFilter, this.filter);
+                    this.reloadData();
+                },
+                dataTableInit: function () {
+                    $table = $("#examTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("ExamQuery")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                 {
+                                    orderable: false,
+                                    width:40,
+                                    render: function (data, type, row) {
+                                        //return '<input onfocus="this.select()" type="checkbox"/>';
+                                        return '<div><input style="width:100%;" onfocus="this.select()" type="checkbox"/></div>';
+
+                                    }
+                                },
+                                {
+                                    orderable: false, title: "序号",width:40, render: function (data, type, full, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + (meta.row + meta.settings._iDisplayStart + 1) + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "title",title: "考试名称", sName: "title"
+                                },{
+                                    orderable: false, data: "UsertagDesc",title: "用户类型", sName: "UsertagDesc"
+                                },
+                                {
+                                    orderable: false, data: "introducation", title: "指导语", sName: "introducation"
+                                },
+                                { orderable: false, data: "begin_time_str", width:100, title: "开始日期", sName: "begin_time_str" , render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + data + "</div>";
+                                    }},
+                                { orderable: false, data: "end_time_str", width:100, title: "结束日期", sName: "end_time_str", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + data + "</div>";
+                                    } },
+                                { orderable: false, data: "is_begin_str",  width:80,title: "是否启用", sName: "is_begin_str", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + data + "</div>";
+                                    } },
+                                {
+                                    orderable: false, data: "Id", title: "操作",width:50, sName: "Id", render: function (data, type, row, meta) {
+                                        var button= "<div style='width:100%;text-align:center;'>"
+                                        button += "<a style='text-align:center;cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.showDialog(" + row.id + ")'>" + "编辑" + "</a>";
+                                        button+= "</div>";
+                                        return button;
+                                    }
+                                }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                init: function () {
+
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                    grid.reload();
+                },
+                //resetFitler: function () {
+                //    this.filter = {
+                //        mode: 1,
+                //        document_name: null,
+                //        content: null
+                //    };
+                //},
+                //清空对象
+                resetexam: function () {
+                    this.detail = {
+                    }
+                },
+                //隐藏窗口
+                hideDialog: function () {
+                    var self = this;
+                    $("#examViewEditModal").on('hide.bs.modal', function () {
+                        self.resetexam();
+                    });
+                },
+                //读取详细信息
+                showDialog: function (id) {
+                     var self = this;
+                    $.ajax({
+                        type: 'POST',
+                        data: { id: id },
+                        url: '@Url.Action("examDetail")',
+                        success: function (data) {
+                            if (data.Success) {
+                                self.detail = data.Data
+                                self.detail.begin_time = data.Data.begin_time_str;
+                                self.detail.end_time = data.Data.end_time_str;
+                                $("#examViewEditModal").modal();
+                            }
+                        }
+                    });
+                },
+                //0~100验证数字
+                validNum: function (e) {
+                    let self = this;
+                    let value = e.target.value;
+                    let mark = false;
+                    if (isNaN(value)) {
+                         $.showWarning("必须为0~100的正整数");
+                            mark = true;
+                    } else {
+                        value = parseInt(value);
+                        if (value > 100 || value < 0) {
+                         $.showWarning("必须为0~100的正整数");
+                            mark = true;
+                        }
+                    }
+                    if (mark) {
+                        value = 0;
+                    }
+                    switch (e.target.name) {
+                        case "pct_mode1": self.detail.pct_mode1 = value; break;
+                        case "pct_mode2":  self.detail.pct_mode2 = value;break;
+                        case "pct_mode3":  self.detail.pct_mode3 = value;break;
+                        default:
+                    }
+                },
+                //正整数验证
+                validNum1: function (e) {
+                let self = this;
+                let value = e.target.value;
+                let mark = false;
+                if (isNaN(value)) {
+                     $.showWarning("必须为正整数");
+                        mark = true;
+                } else {
+                    value = parseInt(value);
+                    if (value < 0) {
+                     $.showWarning("必须为正整数");
+                        mark = true;
+                    }
+                }
+                if (mark) {
+                    value = 0;
+                }
+                switch (e.target.name) {
+                    case "total_num": self.detail.total_num = value; break;
+                    case "score":  self.detail.score = value;break;
+                    case "time_restrict": self.detail.time_restrict = value; break;
+                    case "limit_num": self.detail.limit_num = value; break;
+                    default:
+                }
+                },
+                //保存
+                save: function () {
+                    if (!this.valid()) {
+                        return;
+                    }
+                    let self = this;
+                    let data = this.detail;
+                    data.documentStrSave = data.documentStr;
+                    let json = JSON.stringify(data);
+                    debugger;
+                    $.ajax({
+                        url: "@Url.Action("SaveExam")",
+                        datatype: 'json',
+                        type: 'POST',
+                        contentType: 'application/json;charset=UTF-8',
+                        data:json ,
+                           success: function (data) {
+                               if (data.Success) {
+                                   $.showSuccess(data.Message);
+                                   $("#examViewEditModal").modal("hide");
+                                   grid.getDataTable().ajax.reload(null, false);
+                               }
+                           }
+                       });
+                },
+                dateFomat:function (fmt, date) {
+                    let ret;
+                    const opt = {
+                        "y+": date.getFullYear().toString(),        // 年
+                        "MM+": (date.getMonth() + 1).toString(),     // 月
+                        "d+": date.getDate().toString(),            // 日
+                        "h+": date.getHours().toString(),           // 时
+                        "m+": date.getMinutes().toString(),         // 分
+                        "s+": date.getSeconds().toString()          // 秒
+                        // 有其他格式化字符需求可以继续添加，必须转化成字符串
+                    };
+                    for (let k in opt) {
+                        ret = new RegExp("(" + k + ")").exec(fmt);
+                        if (ret) {
+                            fmt = fmt.replace(ret[1], (ret[1].length == 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
+                        };
+                    };
+                    return fmt;
+                },
+                //新增
+                addData: function () {
+                    //debugger;
+                    //let begindate = this.dateFomat("yyyy-MM-dd",new Date());
+                    //let enddate=new Date().getDate() + 30;
+                    this.detail = {
+                        title:"",
+                        introducation: "",
+                        total_num: null,
+                        score: null,
+                        pct_mode1: null,
+			            pct_mode2:null,
+			            pct_mode3:null,
+			            time_restrict:null,
+                        order_mode: null,
+                        begin_time: BeginDate,
+                        end_time: EndDate,
+			            limit_num:null,
+			            is_begin:1
+                    }
+                    $("#examViewEditModal").modal();
+                },
+                //验证
+                valid: function () {
+                    let message = "";
+                    if (!this.detail.title) {
+                        message += "考试名称必填!<br />";
+                    }
+                     if (!this.detail.total_num) {
+                        message += "抽提数量必填,且必须是正整数!<br />";
+                    }
+                     if (!this.detail.begin_time) {
+                        message += "开始日期必填!<br />";
+                    }
+                     if (!this.detail.end_time) {
+                        message += "结束日期必填!<br />";
+                    }
+                     if (!this.detail.score) {
+                        message += "每题分数必填,且必须是正整数!<br />";
+                    }
+                     if (!this.detail.pct_mode1&&this.detail.pct_mode1!=0) {
+                        message += "单选占比必填,且必须是0~100的整数!<br />";
+                    }
+                     if (!this.detail.pct_mode2&&this.detail.pct_mode2!=0) {
+                        message += "多选占比必填,且必须是0~100的整数!<br />";
+                    }
+                     if (!this.detail.pct_mode3&&this.detail.pct_mode3!=0) {
+                        message += "判断占比必填,且必须是0~100的整数!<br />";
+                    }
+                     if (!this.detail.time_restrict&&this.detail.time_restrict!=0) {
+                        message += "限制时间不能为空!<br />";
+                    }
+                     if (!this.detail.order_mode) {
+                        message += "题目排序不能为空!<br />";
+                    }
+                     if (!this.detail.is_begin&&this.detail.is_begin!=0) {
+                        message += "是否启用不能为空!<br />";
+                    }
+                    if (!this.detail.user_tag) {
+                        message += "用户类型不能为空!<br />";
+                    }
+                    if (message) {
+                        $.showWarning(message);
+                        return false;
+                    }
+                    //非空验证
+                    return true;
+                }
+            }
+        });
+
+    </script>
+}

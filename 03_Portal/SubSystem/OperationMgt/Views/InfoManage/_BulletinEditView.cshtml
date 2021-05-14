@@ -1,0 +1,67 @@
+﻿
+<div class="modal fade bs-example-modal-lg" id="bulletinViewEditModal" tabindex="-1" role="dialog"
+     aria-labelledby="bulletinViewEditModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">
+                    ×
+                </button>
+                <h4 class="modal-title">编辑</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>公告类型：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <select class="form-control select-fix100" v-model="detail.type" >
+                                <option v-for="item in typeList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>公告标题：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <input v-model="detail.title" placeholder="题目序号" type="text" maxlength="100" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>公告正文：</label>
+                        </div>
+                        <div class="col-md-10 col-xs-10 col-lg-10">
+                            <textarea v-model="detail.content" style="height:200px;" placeholder="公告正文" type="text"  class="form-control input-no-clear" ></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12  col-lg-12">
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>公告时间：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <label v-model="detail.CreateTimeDesc">{{detail.CreateTimeDesc}}</label>
+                        </div>
+                        <div class="col-md-2 col-xs-2 col-lg-2 control-label">
+                            <label>发表人：</label>
+                        </div>
+                        <div class="col-md-4 col-xs-4 col-lg-4">
+                            <label v-model="detail.UserName">{{detail.UserName}}</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" v-on:click="save">保存</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,462 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 题库管理</title>
+
+    @BuildCssRef("~/Content/third/webuploader/webuploader.css")
+    @BuildJsRef("~/Content/third/webuploader/webuploader.nolog.min.js")
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">模拟考试</li>
+    <li id="MenuLevel2" class="active">题库管理</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>文档名称：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input v-model.trim="filter.document_name" name="documentname" placeholder="文档名称" maxlength="2000" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>题目内容：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input v-model.trim="filter.content" name="content" autocomplete="new-password" placeholder="题目内容" maxlength="2000" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>题型：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.mode">
+                                <option v-for="item in modeList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>用户类型：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.usertag">
+                                <option v-for="item in usertagList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="widget">
+                <div class="widget-footer tc">
+                    <span class="btn btn-info" v-on:click="search"><i class="glyphicon glyphicon-search"></i>查询</span>
+                    &nbsp;&nbsp;<span class="btn btn-primary-o" v-on:click="resetFitler"><i class="fa fa-undo"></i>重置</span>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <vue-uploader ref="import" style="float:right;padding-left:4px;width:40px;"
+                                  server-url="/OperationMgt/MockTest/ImportQusetion"
+                                  :multiple="false"
+                                  :allow-duplicate="false"
+                                  v-on:upload-success="handleImportSuccess">
+                        @*<button type="button" style="height:30px;width:50px;" class="btn btn-primary btn-xs">导入</button>*@
+                        <span class="btn btn-yellow btn-xs">导入</span>
+                    </vue-uploader>
+
+                    <span class="btn btn-darkorange btn-xs" v-on:click="deleteData">删除</span>
+                    <span class="btn  btn-yellow btn-xs" v-on:click="downTemplete">下载模板</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="questionTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th style="text-align:center;"><input onfocus="this.select()" type="checkbox" /></th>
+                            <th style="text-align:center;">序号</th>
+                            <th style="text-align:center;">用户类型</th>
+                            <th style="text-align:center;">所属文件</th>
+                            <th style="text-align:center;">内容</th>
+                            <th style="text-align:center;">题型</th>
+                            <th style="text-align:center;">答案解析</th>
+                            <th style="text-align:center;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <!--活动编辑模态框-->
+        @Html.Partial("_QuestionEditView")
+        @Html.Partial("~/Views/Components/VueUpload.cshtml")
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+        var showImgUrl = "http://sc.cmccsi.com.cn/api/file/";
+        function getTableSelectData() {
+            var trs = grid.getSelectedRowsData(false);
+            var result = [];
+            for (var i = 0; i < trs.length; i++) {
+                 result.push(trs[i].id);
+            }
+
+            return result;
+        }
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    mode: 1,
+                    document_name: null,
+                    content: '',
+                    usertag: null
+                },
+                detail: {
+                    document_id: null,
+                    order_num: null
+
+                },
+                modeList: [{ name: '', id: null },
+                    { name: '单选', id: 1 },
+                    { name: '多选', id: 2 },
+                    { name: '判断', id: 3 }],
+                 usertagList: [{ name: '不限制', id: null },
+                    { name: '评审专家', id: 9 },
+                    { name: '采购人员', id: 10 },
+                    { name: '代理人员', id: 11 }],
+                usertagcheckList: [
+                    { name: '评审专家', id: 9 },
+                    { name: '采购人员', id: 10 },
+                    { name: '代理人员', id: 11 }],
+                imgViewUrl: ""
+            },
+            mounted: function () {
+                this.init();
+                this.dataTableInit();
+                this.reloadData();
+                this.showDialogEvent();
+            },
+            methods: {
+               search: function () {
+                    this.copyFilter = _.extend(this.copyFilter, this.filter);
+                    this.reloadData();
+                },
+                dataTableInit: function () {
+                    $table = $("#questionTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("QuestionQuery")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                 {
+                                    orderable: false,
+                                     width:40,
+                                    render: function (data, type, row) {
+                                        return '<div><input style="width:100%;" onfocus="this.select()" type="checkbox"/></div>';
+                                    }
+                                },
+                                //{
+                                //    orderable: false, title: "序号",width:60, render: function (data, type, full, meta) {
+                                //        return meta.row + meta.settings._iDisplayStart + 1;
+                                //    }
+                                //},
+                                {
+                                    orderable: false, data: "order_num",width:80,title: "题目序号", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + data + "</div>";
+                                    }
+                                },
+                                    {
+                                    orderable: false, data: "UsertagDesc",width:110,title: "用户类型", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + data + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "document_name", width:300, title: "所属文件", sName: "document_name"
+                                },
+                                { orderable: false, data: "content", title: "内容", sName: "content" },
+                                {
+                                    orderable: false, data: "modeStr", width: 80, title: "题型", sName: "modeStr", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:center;'>" + data + "</div>";
+                                    }
+                                }, {
+                                    orderable: false, data: "answer_analysis",  width: 300, title: "答案解析", sName: "answer_analysis", render: function (data, type, row, meta) {
+                                        return "<div style='width:100%;text-align:left;'>" + (data?data:"") + "</div>";
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "Id", title: "操作", width: 100, sName: "Id", render: function (data, type, row, meta) {
+                                        var button = "<div style='width:100%;text-align:center;'>";
+                                        button += "<a style='text-align:center;cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.showDialog(" + row.id + ")'>" + "编辑" + "</a>";
+                                        button += "<a style='text-align:center;cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.deleteSingleData(" + row.id + ")'>" + "删除" + "</a>";
+                                        return button+"</div>";
+                                    }
+                                }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                init: function () {
+                    @*var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("QueryTagAndDepartmentList")',
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                self.catList = _.union([{ Id: null, Name: '全选' }], _.map(data.Data.CatList, function (item) {
+                                    return {
+                                        Id: item.Id,
+                                        Name: item.Lable
+                                    }
+                                }));
+                                self.departmentList = _.union([{ BusinessId: null, Name: '全选' }], data.Data.Departmentlist);
+                            }
+                        }
+                    });*@
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                    grid.reload();
+                },
+                resetFitler: function () {
+                    this.filter = {
+                        mode: 1,
+                        document_name: null,
+                        content: null
+                    };
+                },
+                resetquestion: function () {
+                    this.detail = {
+                    }
+                },
+                hideDialog: function () {
+                    var self = this;
+                    $("#questionViewEditModal").on('hide.bs.modal', function () {
+                        self.resetquestion();
+                    });
+                },
+                showDialog: function (id) {
+                     var self = this;
+                    $.ajax({
+                        type: 'POST',
+                        data: { id: id },
+                        url: '@Url.Action("QuestionDetail")',
+                        success: function (data) {
+                            if (data.Success) {
+                                self.detail = data.Data;
+                                $("#questionViewEditModal").modal();
+                            }
+                        }
+                    });
+                },
+                showDialogEvent: function () {
+                    var self = this;
+                        self.$refs['import'].initWebUploader();
+                    // 由于vue加载dom生命周期与bootstrap modal加载生命周期不同，导致上传文件按钮获取不到高度，因此在弹出加载的时候事件监听
+                    $("#questionViewEditModal").on('shown.bs.modal', function () {
+                        self.$refs['upload'].forEach((item, i) => {
+                            item.initWebUploader();
+                        })
+                        self.$refs['main-upload'].initWebUploader();
+
+                    });
+                },
+                //验证数字
+                validNum: function (e) {
+                    let value = e.target.value;
+                    debugger;
+                    let mark = false;
+                    if (isNaN(value)) {
+                         $.showWarning("必须为0~127的整数");
+                            mark = true;
+                    } else {
+                        value = parseInt(value);
+                        if (value > 127 || value < 0) {
+                         $.showWarning("必须为0~127的整数");
+                            mark = true;
+                        }
+                    }
+                    if (mark) {
+                        value = 0;
+                    }
+                    if (e.target.name == "ip_restrict") {
+                            this.detail.is_ip_restrict = value;
+                        } else if (e.target.name == "user_restrict") {
+                            this.detail.is_user_restrict = value;
+                        }
+                },
+                //保存
+                save: function () {
+                    let self = this;
+                    let data = this.detail;
+                    let validFlg = false;
+                    if (!data.document_name) {
+                        $.showWarning("关联文档必填");
+                        validFlg = true;
+                    }
+                    if (!data.order_num) {
+                         $.showWarning("题目序号必填");
+                        validFlg = true;
+                    }
+                     if (!data.order_num) {
+                         $.showWarning("题型必填");
+                        validFlg = true;
+                    }
+                     if (!data.order_num) {
+                         $.showWarning("题目内容必填");
+                        validFlg = true;
+                    }
+                    for (var i = 0; i < data.AnswerList.length; i++) {
+                        debugger;
+                        if (!data.AnswerList[i].content) {
+                            let num = String.fromCharCode(i + 65);
+                         $.showWarning("答案"+num+"内容不能为空");
+                            validFlg = true;
+                        }
+                    }
+                    if (validFlg) {
+                        return;
+                    }
+                    $.ajax({
+                        url: "@Url.Action("SaveQusetion")",
+                        datatype: 'json',
+                        type: 'POST',
+                        contentType: 'application/json;charset=UTF-8',
+                        data: JSON.stringify(data),
+                           success: function (data) {
+                               if (data.Success) {
+                                   $.showSuccess(data.Message);
+                                   $("#questionViewEditModal").modal("hide");
+                                   grid.getDataTable().ajax.reload(null, false);
+                               }
+                           }
+                       });
+                },
+                //删除数据
+                deleteData: function () {
+                    var ids = getTableSelectData();
+                    if (!ids || ids.length == 0) {
+                        return $.showWarning("请选中要删除的题目！");
+                    }
+                    let self = this;
+                    $.confirm("是否确定删除？", function (ok) {
+                        if (ok) {
+                            self.deletePost(ids);
+                        }
+                    });
+                },
+                deleteSingleData: function (id) {
+                    let self = this;
+                    $.confirm("是否确定删除？", function (ok) {
+                        if (ok) {
+                            self.deletePost([id]);
+                        }
+                    });
+                },
+                deletePost: function (ids) {
+                       $.ajax({
+                                type: 'POST',
+                                contentType: 'application/json',
+                                url: "@Url.Action("DeleteQuestion")",
+                                data: JSON.stringify({ ids: ids }),
+                                success: function (data) {
+                                    if (data.Success) {
+                                        $.showSuccess(data.Message);
+                                        grid.getDataTable().ajax.reload(null, false);
+                                    }
+                                }
+                            });
+                },
+                downTemplete: function () {
+                    window.open("http://sc.cmccsi.com.cn/legitimate/questions_template.xlsx");
+                },
+                //查看图片
+                showImg: function (url) {
+                    this.imgViewUrl =url;
+                    $("#showImgViewModal").modal();
+                },
+                handleUploadSuccess: function (e, res) {
+                    let upfileUrl = "/upload/";
+                         if (res.code === 1) {
+                        $.showSuccess("上传成功！");
+                             var name = res.data.newName;
+                             switch (e.source._refer[0].id) {
+                                 case "main-upload":
+                                     this.detail.img_url = upfileUrl + name;
+                                     this.detail.img_url_str = showImgUrl + name;
+                                     break;
+                                 case "0":
+                                     this.detail.AnswerList[0].img_url = upfileUrl + name;
+                                     this.detail.AnswerList[0].img_url_str = showImgUrl + name;
+                                     break;
+                                 case "1":
+                                     this.detail.AnswerList[1].img_url = upfileUrl + name;
+                                     this.detail.AnswerList[1].img_url_str = showImgUrl + name;
+                                     break;
+                                 case "2":
+                                     this.detail.AnswerList[2].img_url = upfileUrl + name;
+                                     this.detail.AnswerList[2].img_url_str = showImgUrl + name;
+                                     break;
+                                 case "3":
+                                     this.detail.AnswerList[3].img_url = upfileUrl + name;
+                                     this.detail.AnswerList[3].img_url_str = showImgUrl + name;
+                                     break;
+                                 default:
+                             }
+                        //this.document.Name = data.originName;
+                        //this.document.Type = data.ext;
+                        //this.document.Url = '/upload/' + data.newName;
+                        //this.document.Size = data.size;
+                        //this.document.HasUpload = true;
+                    }
+                }
+                //导入
+                , handleImportSuccess: function (e, res) {
+                    if (res.Success) {
+                        $.showSuccess(res.Message);
+                        grid.getDataTable().ajax.reload(null, false);
+                    }
+                    else {
+                        $.showError(res.Message);
+                    }
+                    debugger;
+                }
+            }
+        });
+
+    </script>
+}

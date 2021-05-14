@@ -1,0 +1,266 @@
+﻿@section rsHeader {
+    <title>四川公司企业号管理后台 - 外部门协助统计</title>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">快车道查询统计</li>
+    <li id="MenuLevel2" class="active">外部门协助统计</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>所属单位：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.DepartmentId">
+                                <option v-for="item in departmentList" :value="item.BusinessId">
+                                    {{item.Name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>创建日期：</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer;min-width:100px;"
+                                       v-model="filter.StartTime"
+                                       placeholder="开始时间"
+                                       class="form-control"
+                                       v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer;min-width:100px;"
+                                       v-model="filter.EndTime"
+                                       placeholder="结束时间"
+                                       class="form-control"
+                                       v-on:click="endTimePickerClick('endTime')" id="endTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-2 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="search">查询</button>
+                        </div>
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="resetFilter">重置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span v-on:click="exportReport" class="btn btn-yellow btn-xs">导出</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="externalDepartmentStatisticsTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th>序号</th>
+                            <th>主题所属公司</th>
+                            <th>主题发表人</th>
+                            <th>主题标题</th>
+                            <th>外协人员</th>
+                            <th>外协部门</th>
+                            <th>分派时间</th>
+                            <th>完结评星数</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    StartTime: '@DateTime.Now.ToString("yyyy-1-1")',
+                    EndTime: '@DateTime.Now.ToString("yyyy-MM-dd")',
+                    DepartmentId: null
+                },
+                departmentList: [],
+                copyFilter: {}
+            },
+            mounted: function () {
+                this.copyFilterData();
+                this.initDepartment();
+                this.dataTableInit();
+                this.reloadData();
+            },
+            methods: {
+                dataTableInit: function() {
+                    $table = $("#externalDepartmentStatisticsTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("QueryExternalDepartmentStatistics")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                {
+                                    orderable: false,
+                                    title: "序号",
+                                    render: function(data, type, full, meta) {
+                                        return meta.row + meta.settings._iDisplayStart + 1;
+                                    }
+                                },
+                                {
+                                    orderable: false,
+                                    data: "SubjectDepartmentName",
+                                    title: "主题所属公司",
+                                    sName: "SubjectDepartmentName"
+                                },
+                                {
+                                    orderable: false,
+                                    data: "CreateSubjectUserName",
+                                    title: "主题发表人",
+                                    sName: "CreateSubjectUserName"
+                                },
+                                {
+                                    orderable: false,
+                                    data: "Title",
+                                    title: "主题标题",
+                                    sName: "Title",
+                                    render: function(data, type, row, meta) {
+                                        return "<a href='@Url.Action("Detail", "Subject")?subjectId=" +
+                                            row.Id +
+                                            "'>" +
+                                            JSON.parse(data).v +
+                                            "</a>";
+                                    }
+                                },
+                                {
+                                    orderable: false,
+                                    data: "ExternalUserName",
+                                    title: "外协人员",
+                                    sName: "ExternalUserName"
+                                },
+                                {
+                                    orderable: false,
+                                    data: "ExternalDepartmentName",
+                                    title: "外协部门",
+                                    sName: "ExternalDepartmentName"
+                                },
+                                {
+                                    orderable: false,
+                                    data: "AssignmentTime",
+                                    title: "分派时间",
+                                    sName: "AssignmentTime",
+                                    render: function(data, type, row, meta) {
+                                        return moment(data).format("YYYY-MM-DD HH:mm:ss");
+                                    }
+                                },
+                                { orderable: false, data: "Stat", title: "完结评星数", sName: "Stat" }
+                            ],
+                            "order": [],
+                            "drawCallback": function() {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                    grid.reload();
+                },
+                copyFilterData: function() {
+                    this.copyFilter = _.extend(this.copyFilter, this.filter);
+                },
+                search: function () {
+                    this.copyFilterData();
+                    this.reloadData();
+                },
+                resetFilter: function() {
+                    this.filter = {
+                        StartTime: '@DateTime.Now.ToString("yyyy-1-1")',
+                        EndTime: '@DateTime.Now.ToString("yyyy-MM-dd")',
+                        DepartmentId: null
+                    }
+                },
+                beginTimePickerClick: function(id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function(dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.StartTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                            self.filter.StartTime = null;
+                            self.$emit('input', '');
+                        }
+                    });
+                },
+                endTimePickerClick: function(id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function(dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.EndTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                            self.filter.EndTime = null;
+                            self.$emit('input', '');
+                        }
+                    });
+                },
+                exportReport: function() {
+                    $.exportExcel('@Url.Action("SearchExportExternalDepartmentStatistics")',
+                        [{ name: 'queryString', value: $.toJSON(this.copyFilter) }]);
+                },
+                initDepartment: function() {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("GetDepartmentList")',
+                        success: function(data) {
+                            if (data.Data && data.Success) {
+                                self.departmentList = _.union([{ BusinessId: null, Name: '全选' }], data.Data);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+    </script>
+}

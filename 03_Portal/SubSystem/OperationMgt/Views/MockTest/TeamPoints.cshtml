@@ -1,0 +1,172 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 团队积分</title>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">模拟考试</li>
+    <li id="MenuLevel2" class="active">团队积分</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+
+                <div class="row mt15">
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>统计年度：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input v-model.trim="filter.statisticsYear" name="statisticsYear"  placeholder="输入年份" type="number" class="form-control input-no-clear" />
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>统计模式：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.statisticsMode">
+                                <option v-for="item in modeList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>用户类型：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.userTag">
+                                <option v-for="item in userTagList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="widget">
+                <div class="widget-footer tc">
+                    <span class="btn btn-info" v-on:click="search"><i class="glyphicon glyphicon-search"></i>查询</span>
+                    &nbsp;&nbsp;<span class="btn btn-primary-o" v-on:click="resetFitler"><i class="fa fa-undo"></i>重置</span>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span class="btn btn-yellow btn-xs" v-on:click="Export">导出</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" >
+                    <thead class="bordered">
+                        <tr>
+                            <th style="text-align:center;">名次</th>
+                            <th style="text-align:center;">姓名</th>
+                            <th style="text-align:center;">用户类型</th>
+                            <th v-if="filter.statisticsMode==1" style="text-align:center;">年度积分</th>
+                            <th v-if="filter.statisticsMode==2" style="text-align:center;">年度人均积分</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item,index) in tableList">
+                            <td style="text-align:center;" v-text="index+1"></td>
+                            <td style="text-align:center;" v-text="item.name"></td>
+                            <td style="text-align:center;" v-text="item.tag_name"></td>
+                            <td v-if="filter.statisticsMode==1" style="text-align:right;" v-text="item.score_year.toFixed(2)"></td>
+                            <td v-if="filter.statisticsMode==2" style="text-align:right;" v-text="item.score_average.toFixed(2)"></td>
+                        </tr>
+                        <tr v-if="tableList.length === 0">
+                            <td colspan="10" style="text-align:center;">暂无数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+
+          var grid = new Datatable();
+        function getTableSelectData() {
+            var trs = grid.getSelectedRowsData(false);
+            var result = [];
+            for (var i = 0; i < trs.length; i++) {
+                 result.push(trs[i].id);
+            }
+
+            return result;
+        }
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    userTag: 9,
+                    statisticsYear: new Date().getFullYear(),
+                    statisticsMode:1,
+
+                },
+                modeList: [{ name: '年度总积分榜', id: 1 },
+                    { name: '年度人均积分榜', id: 2 }],
+                userTagList: [],
+                tableList: []
+            },
+            mounted: function () {
+                this.filterInit();
+                this.search();
+            },
+            methods: {
+                filterInit: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("GetUserTag")',
+                        success: function (data) {
+                            self.userTagList=data.Data;
+                        }
+                    });
+                },
+               search: function () {
+                  var self = this;
+                   let json = JSON.stringify(this.filter);
+                    $.ajax({
+                        url: "@Url.Action("TeamPointsQuery")",
+                        type: "GET",
+                        contentType: 'application/json;charset=UTF-8',
+                        data:this.filter ,
+                        datatype: "json",
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                self.tableList = data.Data;
+                            }
+                        }
+                    });
+                },
+                resetFitler: function () {
+                    this.filter={
+                        userTag: null,
+                        statisticsYear: null,
+                        statisticsMode:1,
+                    }
+                },
+                Export: function () {
+                    $.exportExcel('@Url.Action("TeamPointsExport")', [{ name: 'queryString', value: $.toJSON(this.filter) }]);
+                }
+            }
+        });
+
+    </script>
+}

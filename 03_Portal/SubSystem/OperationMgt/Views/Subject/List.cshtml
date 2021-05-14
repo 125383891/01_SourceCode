@@ -1,0 +1,451 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 论坛主题管理</title>
+
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">论坛主题管理</li>
+    <li id="MenuLevel2" class="active">主题列表浏览</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>关键字：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input v-model.trim="filter.Keyword" placeholder="标题/发表人姓名" maxlength="2000" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-5 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>创建日期：</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.StartTime"
+                                       placeholder="开始时间"
+                                       class="form-control"
+                                       v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.EndTime"
+                                       placeholder="结束时间"
+                                       class="form-control"
+                                       v-on:click="endTimePickerClick('endTime')" id="endTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>主题分类：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.CatId">
+                                <option v-for="item in catList" :value="item.Id">
+                                    {{item.Name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>所属单位：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.DepartmentId">
+                                <option v-for="item in departmentList" :value="item.BusinessId">
+                                    {{item.Name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>投诉供应商：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input v-model.trim="filter.VendorName" placeholder="供应商名称" maxlength="2000" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12" style="padding-left:35px;">
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="search">查询</button>
+                        </div>
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="resetFitler">重置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span v-on:click="exportSubject" class="btn btn-yellow btn-xs">导出</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="subjectTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th>序号</th>
+                            <th>发表日期</th>
+                            <th>标题</th>
+                            <th>主题分类</th>
+                            <th>赞</th>
+                            <th>回复</th>
+                            <th>热度</th>
+                            <th>评星</th>
+                            <th>活动基础分</th>
+                            <th>质量达人分</th>
+                            <th>重要置顶</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <!--活动编辑模态框-->
+        @Html.Partial("_EditView")
+        @Html.Partial("_EditWeight")
+        @Html.Partial("_ScoreExtraEditView")
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+
+       var vue= new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    Keyword: null,
+                    StartTime: null,
+                    EndTime: null,
+                    CatId: null,
+                    DepartmentId: null
+                },
+                copyFilter: {},//主要用于导出，由于双向绑定的原因，copy对象只有在点击了查询才会copy
+                catList: [],
+                catListEdit:[],
+                departmentList: [],
+                subject: {
+                    subjectId: null,
+                    view: null,
+                    weight: null,
+                    cat_id: null,
+                    cat_extra: null
+                },
+                //质量达人分
+                subjectPlan: {}
+            },
+            mounted: function () {
+                this.init();
+                this.dataTableInit();
+                this.reloadData();
+           },
+           watch: {
+               "subject.cat_id": function (v) {
+                   if (v) {
+                       let cat = this.catListEdit.filter(_ => _.Id == v);
+                       if (cat.length > 0) {
+                           this.subject.cat_extra = cat[0].Lable;
+                       }
+                   }
+               }
+           },
+           methods: {
+               search: function () {
+                   this.copyFilter = _.extend(this.copyFilter, this.filter);
+                   this.reloadData();
+               },
+               dataTableInit: function () {
+                   $table = $("#subjectTable");
+                   grid.init({
+                       src: $table,
+                       dataTable: {
+                           "ajax": {
+                               "url": "@Url.Action("Query")",
+                               "type": "POST",
+                               "datatype": "json"
+                           },
+                           "deferLoading": 0,
+                           columns: [
+                               {
+                                   orderable: false, title: "序号", width: 40, render: function (data, type, full, meta) {
+                                       return meta.row + meta.settings._iDisplayStart + 1;
+                                   }
+                               },
+                               {
+                                   orderable: false, data: "CreateTime", title: "发表日期", width: 140, sName: "CreateTime", render: function (data, type, row, meta) {
+                                       return moment(data).format("YYYY-MM-DD HH:mm:ss");
+                                   }
+                               },
+                               {
+                                   orderable: false, data: "Title", title: "标题", sName: "Title", render: function (data, type, row, meta) {
+                                       return JSON.parse(data).v;
+                                   }
+                               },
+                               { orderable: false, data: "CatName", title: "主题分类", width: 70, sName: "CatName" },
+                               { orderable: false, data: "Zan", title: "赞", width: 50, sName: "Zan" },
+                               { orderable: false, data: "CommentCount", title: "回复", width: 50, sName: "CommentCount" },
+                               { orderable: false, data: "View", title: "热度", width: 50, sName: "View" },
+                               {
+                                   orderable: false, data: "IsScoreStar", title: "评星", width: 50, sName: "IsScoreStar", render: function (data, type, row, meta) {
+                                       if (data !== null && data) {
+                                           return '是';
+                                       } else {
+                                           return '否';
+                                       }
+                                   }
+                               },
+
+                               { orderable: false, data: "Score_Base", title: "活动基础分", sName: "score_base" },
+                               { orderable: false, data: "Score_Extra", title: "质量达人分", sName: "score_extra" },
+                               { orderable: false, data: "Weight", title: "重要置顶", sName: "Weight" },
+                               {
+                                   orderable: false, data: "Id", title: "操作", sName: "Id", width: 250, render: function (data, type, row, meta) {
+                                       var button = "<a style='cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.showDialog(" + row.Id + "," + row.View + ")'>" + "修改" + "</a>";
+                                       button += "<a style='cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.showWeightDialog(" + row.Id + "," + row.Weight + ")'>" + "重要置顶" + "</a>";
+                                       button += "<a style='cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.gotoDetail(" + data + ")'>" + "查看详情" + "</a>";
+                                       if (row.Allow_Score == 1) {
+                                           button += "<a style='cursor: pointer;padding-right:10px' href='javascript:void(0)' onclick='vue.EditAllowScore(" + data + ")'>" + "设置质量达人分" + "</a>";
+                                       }
+                                       return button;
+                                   }
+                               }
+                           ],
+                           "order": [],
+                           "drawCallback": function () {
+                               //渲染完成以后执行按钮事件绑定
+                           }
+                       }
+                   });
+               },
+               init: function () {
+                   var self = this;
+                   $.ajax({
+                       type: 'GET',
+                       url: '@Url.Action("QueryTagAndDepartmentList")',
+                       success: function (data) {
+                           if (data.Data && data.Success) {
+                               self.catList = _.union([{ Id: null, Name: '全选' }], _.map(data.Data.CatList, function (item) {
+                                   return {
+                                       Id: item.Id,
+                                       Name: item.Lable
+                                   }
+                               }));
+                               self.catListEdit = data.Data.CatList;
+                               self.departmentList = _.union([{ BusinessId: null, Name: '全选' }], data.Data.Departmentlist);
+                           }
+                       }
+                   });
+               },
+               gotoDetail: function (id) {
+                   window.open("@Url.Action("Detail")?subjectId=" + id);
+               },
+               //修改质量达人分
+               EditAllowScore: function (subject_id) {
+                   var self = this;
+                   $.ajax({
+                       type: 'POST',
+                       data: { subject_id: subject_id },
+                       url: '@Url.Action("LoadSubjectPlan")',
+                       success: function (data) {
+                           if (data.Success) {
+                               self.subjectPlan = data.Data;
+                               $("#scoreExtraViewEditModal").modal();
+                           }
+                       }
+                   });
+               },
+               updateScoreExtra: function () {
+                   let data = this.subjectPlan;
+                   $.ajax({
+                       url: "@Url.Action("UpdateSubjectPlanScoreExtra")",
+                       datatype: 'json',
+                       type: 'POST',
+                       contentType: 'application/json;charset=UTF-8',
+                       data: JSON.stringify(data),
+                       success: function (data) {
+                           if (data.Success) {
+                               $.showSuccess(data.Message);
+                               $("#scoreExtraViewEditModal").modal("hide");
+                               grid.getDataTable().ajax.reload(null, false);
+                           }
+                       }
+                   });
+               },
+               reloadData: function () {
+                   grid.clearAjaxParams();
+                   grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                   grid.reload();
+               },
+               resetFitler: function () {
+                   this.filter = {
+                       Keyword: null,
+                       StartTime: null,
+                       EndTime: null,
+                       CatId: null,
+                       DepartmentId: null
+                   };
+               },
+               resetSubject: function () {
+                   this.subject = {
+                       subjectId: null,
+                       view: null,
+                       weight: null,
+                       cat_id: null,
+                       cat_extra: null
+                   }
+               },
+               exportSubject: function () {
+                   $.exportExcel('@Url.Action("SearchExportList")', [{ name: 'queryString', value: $.toJSON(this.filter) }]);
+               },
+               hideDialog: function () {
+                   var self = this;
+                   $("#subjectViewEditModal").on('hide.bs.modal', function () {
+                       self.resetSubject();
+                   });
+               },
+               showDialog: function (id, view) {
+                   let self = this;
+                   $.ajax({
+                       type: 'POST',
+                       data: { id: id },
+                       url: '@Url.Action("LoadSubject")',
+                       success: function (data) {
+                           if (data.Success) {
+                               self.subject = data.Data;
+                               $("#subjectViewEditModal").modal();
+                           }
+                       }
+                   });
+                   //debugger;
+                   //if (id) {
+                   //    this.subject.subjectId = id;
+                   //    this.subject.view = view;
+                   //} else {
+                   //    return $.showWarning("请选择编辑行");
+                   //}
+                   //$("#subjectViewEditModal").modal();
+               },
+               //重要置顶
+               showWeightDialog: function (id, weight) {
+                   if (id) {
+                       this.subject.subjectId = id;
+                       this.subject.weight = weight;
+                   } else {
+                       return $.showWarning("请选择编辑行");
+                   }
+                   $("#subjectWeightEditModal").modal();
+               },
+               //重要置顶
+               updateWeight: function () {
+                   if (this.subject.weight) {
+                       if (!(/(^[1-9]\d*$)/.test(this.subject.weight))) {
+                           return $.showWarning("请输入正整数");
+                       }
+                   }
+                   var self = this;
+                   $.ajax({
+                       type: 'GET',
+                       url: '@Url.Action("UpdateWeight")',
+                       data: {
+                           weight: this.subject.weight,
+                           subjectId: this.subject.subjectId
+                       },
+                       success: function (data) {
+                           if (data.Data && data.Success) {
+                               $.showSuccess("编辑成功！");
+                               $("#subjectWeightEditModal").modal("hide");
+                               self.reloadData();
+                           }
+                       }
+                   });
+               },
+                updateView: function () {
+                    if (!this.subject.cat_id) {
+                        $.showWarning("主题分类必填！");
+                        return;
+                    }
+                    var self = this;
+                      $.ajax({
+                        url: "@Url.Action("UpdateViews")",
+                        datatype: 'json',
+                        type: 'POST',
+                        contentType: 'application/json;charset=UTF-8',
+                        data: JSON.stringify(this.subject),
+                          success: function (data) {
+                               if (data.Success) {
+                                   $.showSuccess(data.Message);
+                                   $("#subjectViewEditModal").modal("hide");
+                                    self.reloadData();
+                               }
+                           }
+                       });
+                },
+                beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function(dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.StartTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                             self.filter.StartTime = null;
+                            self.$emit('input', '');
+                        }
+                    });
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function(dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.EndTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                            self.filter.EndTime  = null;
+                            self.$emit('input', '');
+                        }
+                    });
+               }
+            }
+        });
+
+    </script>
+}

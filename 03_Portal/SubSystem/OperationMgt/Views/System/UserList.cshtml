@@ -1,0 +1,320 @@
+﻿@using LYY.AuthCenter.Entity
+@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 用户管理</title>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">系统管理</li>
+    <li id="MenuLevel2" class="active">用户管理</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+                <div class="row mt15">
+                    <div class="form-group col-sm-2 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>账号：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input v-model.trim="filter.LoginName" placeholder="账号" maxlength="50" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group col-sm-2 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>姓名：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input v-model.trim="filter.UserFullName" placeholder="姓名" maxlength="40" class="form-control" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="form-group col-sm-2 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="reloadData">查询</button>
+                        </div>
+                        <div class="col-sm-4 control-label">
+                            <button class="btn btn-primary" v-on:click="resetFitler">重置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span v-on:click="showDialog(null)" class="btn btn-yellow btn-xs">新增</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="userTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th>序号</th>
+                            <th>登录名</th>
+                            <th>姓名</th>
+                            <th>状态</th>
+                            <th>所属角色</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        @Html.Partial("_EditUser")
+    </div>
+
+}
+
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+          var vue= new Vue({
+            el: '#container',
+            data: {
+                dialogTitle: '新增用户',
+                user: {
+                    Id: 0,
+                    BusinessId: null,
+                    LoginName: null,
+                    LoginPassword: null,
+                    UserFullName: null,
+                    CommonStatus: @((int)CommonStatus.Actived),
+                    RoleId: null,
+                    RoleName: null,
+                },
+                filter: {
+                    LoginName: "",
+                    UserFullName: ""
+                },
+                roleList:[],
+            },
+            mounted: function () {
+                this.dataTableInit();
+                this.reloadData();
+                this.hideDialog();
+            },
+            methods: {
+                dataTableInit: function () {
+                    $table = $("#userTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("SearchUserList")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                {
+                                    orderable: false, title: "序号", render: function (data, type, full, meta) {
+                                        return meta.row + meta.settings._iDisplayStart + 1;
+                                    }
+                                },
+                                { orderable: false, data: "LoginName", title: "登录名", sName: "LoginName" },
+                                { orderable: false, data: "UserFullName", title: "姓名", sName: "UserFullName" },
+                                {
+                                    orderable: false, data: "CommonStatus", title: "状态", sName: "CommonStatus", render: function (data, type, row, meta) {
+                                        if (data ===@((int)CommonStatus.Actived)) {
+                                            return "启用";
+                                        } else {
+                                            return "禁用"
+                                        }
+                                    }
+                                },
+                                { orderable: false, data: "RoleName", title: "所属角色", sName: "RoleName" },
+                                {
+                                    orderable: false, data: "Id", title: "操作", sName: "Id", render: function (data, type, row, meta) {
+                                        var html = "";
+                                        html += "<a style='cursor: pointer;margin-right:5px' href='javascript:void(0)' onclick='vue.showDialog(" + data + ")'>" + "编辑" + "</a>";
+                                        html += "<a style='cursor: pointer;margin-right:5px' href='javascript:void(0)' onclick='vue.updateUserStatus(" + data + ","+@((int)CommonStatus.Deleted)+")'>" + "删除" + "</a>";
+                                        html += "<a style='cursor: pointer;margin-right:5px' href='javascript:void(0)' onclick='vue.updatePassword(" + data + ")'>" + "修改密码" + "</a>"
+                                        if (row.CommonStatus ===@((int)CommonStatus.Actived)) {
+                                            html += "<a style='cursor: pointer;margin-right:5px' href='javascript:void(0)' onclick='vue.updateUserStatus(" + data + ","+@((int)CommonStatus.DeActived)+")'>" + "禁用" + "</a>";
+                                        } else {
+                                            html += "<a style='cursor: pointer;margin-right:5px' href='javascript:void(0)' onclick='vue.updateUserStatus(" + data + ","+@((int)CommonStatus.Actived)+")'>" + "启用" + "</a>"
+                                        }
+                                        return html;
+                                    }
+                                }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                resetFitler: function () {
+                    this.filter = {
+                        LoginName: "",
+                        UserFulleName: ""
+                    }
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                    grid.reload();
+                },
+                hideDialog: function () {
+                    var self = this;
+                    $("#addUserInfoModal").on('hide.bs.modal', function () {
+                        self.resetUser();
+                    });
+                },
+                showDialog: function (id) {
+                    if (id) {
+                        this.dialogTitle = '编辑用户';
+                        this.user.BusinessId = id;
+                        this.loadUser();
+                    } else {
+                        this.dialogTitle = '新增用户'
+                    }
+                    this.loadRoleList();
+                    $("#addUserInfoModal").modal()
+                },
+                loadUser: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: "@Url.Action("GetByUserId")/" + this.user.BusinessId,
+                        dataType: "json",
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                var data = data.Data;
+                                self.user.LoginName = data.LoginName;
+                                self.user.UserFullName = data.UserFullName;
+                                self.user.CommonStatus = data.CommonStatus;
+                                self.user.RoleId = data.RoleId;
+                                self.user.RoleName = data.RoleName;
+                            }
+                        }
+                    });
+                },
+                updatePassword: function (id) {
+                    window.bootboxDialog(id);
+                },
+                updateUserStatus: function (id, status) {
+                    var self = this;
+                    var desc = "";
+                    switch (status) {
+                        case @((int)CommonStatus.Actived):
+                            desc="您确定要启用该用户吗？"
+                            break;
+                        case @((int)CommonStatus.DeActived):
+                            desc = "您确定要禁用该用户吗？"
+                            break;
+                        case @((int)CommonStatus.Deleted):
+                            desc = "您确定要删除该用户吗？"
+                            break;
+                        default:
+                            desc = "请选择你要执行操作";
+                            return $.showWarning(desc);
+                    }
+                    // 不允许禁用自己当前的账号
+                    if (@(AuthManager.ReadUserInfo().UserSysNo)=== id) {
+                        return $.showWarning("请勿当前登录账号进行操作");
+                    }
+                    $.confirm(desc, function (ok) {
+                        if (ok) {
+                            $.ajax({
+                                type: 'POST',
+                                url: "@Url.Action("UpdateUserStatus")",
+                                dataType: "json",
+                                data: {
+                                    userId: id,
+                                    status: status
+                                },
+                                success: function (data) {
+                                    if (data.Data && data.Success) {
+                                        $.showSuccess("操作成功")
+                                        self.reloadData();
+                                    }
+                                }
+                            });
+                        }
+                    });
+                },
+                resetUser: function () {
+                    this.user = {
+                        BusinessId: null,
+                        LoginName: null,
+                        LoginPassword: null,
+                        UserFullName: null,
+                        CommonStatus: @((int)CommonStatus.Actived),
+                        RoleId: null,
+                        RoleName: null,
+                    }
+                },
+                loadRoleList: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        contentType: 'application/json',
+                        url: "@Url.Action("SearchRoleList")",
+                        data: JSON.stringify(self.plan),
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                self.roleList = data.Data;
+                            }
+                        }
+                    });
+                },
+                checkValid: function (callBack) {
+                    if (!this.user.LoginName) {
+                        return $.showWarning("请输入用户名称");
+                    }
+                    if (this.user.LoginName.length > 50) {
+                        return $.showWarning("用户名称最大长度50");
+                    }
+                    if (this.user.BusinessId === null) {
+                        if (!this.user.LoginPassword) {
+                            return $.showWarning("请输入账号登录密码");
+                        }
+                        if (this.user.LoginPassword.length > 50) {
+                            return $.showWarning("密码最大长度为50");
+                        }
+                    }
+                    if (this.user.UserFullName && this.user.UserFullName.length > 40) {
+                        return $.showWarning("用户姓名最大长度为40");
+                    }
+                    callBack();
+                },
+                save: function () {
+                    var self = this;
+                    this.checkValid(function () {
+                        var requestUrl = '';
+                        if (self.user.BusinessId == null) {
+                            requestUrl = '@Url.Action("InserUser")';
+                        } else {
+                            requestUrl = '@Url.Action("UpdateUser")';
+                        }
+                        $.ajax({
+                            type: 'POST',
+                            contentType: 'application/json',
+                            url: requestUrl,
+                            data: JSON.stringify(self.user),
+                            success: function (data) {
+                                if (data.Data && data.Success) {
+                                    $.showSuccess("保存成功！");
+                                    $("#addUserInfoModal").modal("hide");
+                                    self.reloadData();
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+        });
+    </script>
+}

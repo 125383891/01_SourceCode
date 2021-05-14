@@ -1,0 +1,197 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 角色管理</title>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">系统管理</li>
+    <li id="MenuLevel2" class="active">角色管理</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span v-on:click="showDialog(null)" class="btn btn-yellow btn-xs">新增</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="roleTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th>序号</th>
+                            <th>角色名称</th>
+                            <th>角色描述</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        @Html.Partial("_EditRole")
+    </div>
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                dialogTitle: '新增角色',
+                role: {
+                    BusinessId: null,
+                    Name: null,
+                    Memo: null
+                }
+            },
+            mounted: function () {
+                this.dataTableInit();
+                this.reloadData();
+                this.hideDialog();
+            },
+            methods: {
+                dataTableInit: function () {
+                    $table = $("#roleTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("SearchRolePageList")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                {
+                                    orderable: false, title: "序号", render: function (data, type, full, meta) {
+                                        return meta.row + meta.settings._iDisplayStart + 1;
+                                    }
+                                },
+                                { orderable: false, data: "Name", title: "角色名称", sName: "Name" },
+                                { orderable: false, data: "Memo", title: "角色描述", sName: "Memo" },
+                                {
+                                    orderable: false, data: "Id", title: "操作", sName: "Id", render: function (data, type, row, meta) {
+                                        var html = "";
+                                        html += "<a class='btn btn-info btn-xs edit' style='margin-right:5px' href='javascript:void(0)' onclick='vue.showDialog(" + data + ")'>" + "编辑" + "</a>";
+                                        html += "<a class='btn btn-info btn-xs edit' style='margin-right:5px' href='javascript:void(0)' onclick='vue.deleteRole(" + data + ")'>" + "删除" + "</a>"
+                                        html += "<a class='btn btn-info btn-xs edit' style='margin-right:5px' href='javascript:void(0)' onclick='vue.gotoFunctionList(" + data + ")'>" + "查看权限" + "</a>"
+                                        return html;
+                                    }
+                                }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.reload();
+                },
+                hideDialog: function () {
+                    var self = this;
+                    $("#rolePermissionListModal").on('hide.bs.modal', function () {
+                        self.resetRole();
+                    });
+                },
+                showDialog: function (id) {
+                    if (id) {
+                        this.dialogTitle = '编辑角色';
+                        this.role.BusinessId = id;
+                        this.loadRole();
+                    } else {
+                        this.dialogTitle = '新增角色'
+                    }
+                    $("#rolePermissionListModal").modal()
+                },
+                loadRole: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: "@Url.Action("GetByRoleId")/" + this.role.BusinessId,
+                        dataType: "json",
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                var data = data.Data;
+                                self.role.Name = data.Name;
+                                self.role.Memo = data.Memo;
+                            }
+                        }
+                    });
+                },
+                resetRole: function () {
+                    this.role = {
+                        BusinessId: null,
+                        Name: null,
+                        Memo: null
+                    };
+                },
+                deleteRole: function (id) {
+                    var self = this;
+                    $.confirm("您确定要删除该角色吗？", function (ok) {
+                        if (ok) {
+                            $.ajax({
+                                type: 'GET',
+                                contentType: 'application/json',
+                                url: "@Url.Action("DeleteRole")/" + id,
+                                success: function (data) {
+                                    if (data.Data && data.Success) {
+                                        $.showSuccess("删除成功！");
+                                        self.reloadData();
+                                    }
+                                }
+                            });
+                        }
+                    })
+                },
+                gotoFunctionList: function (id) {
+                    window.open("@Url.Action("RoleFunction")/" + id);
+                },
+                checkValid: function (callBack) {
+                    if (!this.role.Name) {
+                        return $.showWarning("请输入角色名称");
+                    }
+                    if (this.role.Name.length > 50) {
+                        return $.showWarning("角色名称最大长度为50");
+                    }
+                    if (this.role.Memo && this.role.Memo.length > 200) {
+                        return $.showWarning("角色描述最大长度为200");
+                    }
+                    callBack();
+                },
+                save: function () {
+                    var self = this;
+                    this.checkValid(function () {
+                        var requestUrl = '';
+                        if (self.role.BusinessId === null) {
+                            requestUrl = '@Url.Action("InserRole")';
+                        } else {
+                            requestUrl = '@Url.Action("UpdateRole")';
+                        }
+                        $.ajax({
+                            type: 'POST',
+                            contentType: 'application/json',
+                            url: requestUrl,
+                            data: JSON.stringify(self.role),
+                            success: function (data) {
+                                if (data.Data && data.Success) {
+                                    $.showSuccess("保存成功！");
+                                    $("#rolePermissionListModal").modal("hide");
+                                    self.reloadData();
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+        });
+    </script>
+}

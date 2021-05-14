@@ -1,0 +1,300 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 测验统计</title>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">模拟考试</li>
+    <li id="MenuLevel2" class="active">测验统计</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询条件</span>
+            </div>
+            <div class="widget-body">
+
+                <div class="row mt15">
+                    <div class="form-group col-lg-5 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>统计对象：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="radio"  v-model.trim="filter.statisticsObj" name="objRadios" id="obj1" value="1"> 
+                            <label for="obj1">单位</label>
+                            &nbsp;
+                            &nbsp;
+                            <input type="radio" v-model.trim="filter.statisticsObj" name="objRadios" id="obj2" value="2"> 
+                            <label for="obj2">个人</label>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>统计模式：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="radio"  v-model.trim="filter.statisticsMode" name="modeRadios" id="mode1" value="1"> 
+                            <label for="mode1">个人练习</label>
+                            &nbsp;
+                            &nbsp;
+                            <input type="radio"  v-model.trim="filter.statisticsMode" name="modeRadios" id="mode2" value="2"> 
+                            <label for="mode2">模拟考试</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt15">
+                    <div class="form-group col-lg-5 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>测验日期：</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.StartTime"
+                                       @*placeholder="开始时间"*@
+                                       class="form-control"
+                                       v-on:click="beginTimePickerClick('beginTime')" id="beginTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group non-padding">
+                                <input type="text"
+                                       readonly
+                                       style="cursor:pointer"
+                                       v-model="filter.EndTime"
+                                       @*placeholder="结束时间"*@
+                                       class="form-control"
+                                       v-on:click="endTimePickerClick('endTime')" id="endTime">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>测验类型：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.mode">
+                                <option v-for="item in modeList" :value="item.id">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div v-if="filter.statisticsMode==1" class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>针对文档：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input v-model.trim="filter.document_name" name="content" maxlength="2000" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group col-lg-5 col-sm-6 col-xs-12">
+                        <div class="col-sm-3 control-label">
+                            <label>针对模拟考试：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.examid">
+                                <option v-for="item in testList" :value="item.id">
+                                    {{item.title}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-sm-6 col-xs-12">
+                        <div class="col-sm-4 control-label">
+                            <label>排序指标：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control select-fix100" v-model="filter.sortColumn">
+                                <option v-for="item in columnList" :value="item.column">
+                                    {{item.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                @*<div class="row mt15">
+                </div>*@
+            </div>
+            <div class="widget">
+                <div class="widget-footer tc">
+                    <span class="btn btn-info" v-on:click="search"><i class="glyphicon glyphicon-search"></i>查询</span>
+                    &nbsp;&nbsp;<span class="btn btn-primary-o" v-on:click="resetFitler"><i class="fa fa-undo"></i>重置</span>
+                </div>
+            </div>
+        </div>
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span class="btn btn-yellow btn-xs" v-on:click="Export">导出</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered">
+                    <thead class="bordered">
+                        <tr>
+                            <th style="text-align:center;">序号</th>
+                            <th v-if="filter.statisticsObj==1" style="text-align:center;">部门</th>
+                            <th v-if="filter.statisticsObj==2" style="text-align:center;">名称</th>
+                            <th style="text-align:center;">测验次数</th>
+                            <th style="text-align:center;">平均正确率</th>
+                            <th style="text-align:center;">最高正确率</th>
+                            <th style="text-align:center;">最低正确率</th>
+                            <th style="text-align:center;">平均得分</th>
+                            <th style="text-align:center;">最高得分</th>
+                            <th style="text-align:center;">最低得分</th>
+                            <th style="text-align:center;">总耗时</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item,index) in tableList">
+                            <td style="text-align:center;" v-text="index+1"></td>
+                            <td v-text="item.Name"></td>
+                            <td style="text-align:right;" v-text="item.TestCount"></td>
+                            <td style="text-align:right;" v-text="item.AvgRightRate.toFixed(2)"></td>
+                            <td style="text-align:right;" v-text="item.MaxRightRate.toFixed(2)"></td>
+                            <td style="text-align:right;" v-text="item.MinRightRate.toFixed(2)"></td>
+                            <td style="text-align:right;" v-text="item.AvgScore.toFixed(2)"></td>
+                            <td style="text-align:right;" v-text="item.MaxScore.toFixed(2)"></td>
+                            <td style="text-align:right;" v-text="item.MinScore.toFixed(2)"></td>
+                            <td style="text-align:right;" v-text="item.SumDuration"></td>
+                        </tr>
+                        <tr v-if="tableList.length === 0">
+                            <td colspan="10" style="text-align:center;">暂无数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var begindate = '@DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd")';
+        var enddate = '@DateTime.Now.ToString("yyyy-MM-dd")';
+
+        var vue = new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    mode: null,
+                    document_name: null,
+                    StartTime: begindate,
+                    EndTime: enddate,
+                    examid: null,
+                    sortColumn: 'TestCount',
+                    statisticsObj:1,
+                    statisticsMode:1,
+
+                },
+                modeList: [{ name: '', id: null },
+                    { name: '个人练习', id: 1 },
+                    { name: '模拟考试', id: 2 }],
+                testList: [],
+                columnList: [
+                    { name: '测验次数', column: 'TestCount' },
+                    { name: '平均正确率', column: 'AvgRightRate' },
+                    { name: '最高正确率', column: 'MaxRightRate' },
+                    { name: '最低正确率', column: 'MinRightRate' },
+                    { name: '平均得分', column: 'AvgScore' },
+                    { name: '最高得分', column: 'MaxScore' },
+                    { name: '最低得分', column: 'MinScore' },
+                    { name: '总耗时', column: 'SumDuration' }
+                ],
+                tableList: []
+            },
+            mounted: function () {
+                this.filterInit();
+                this.search();
+            },
+            methods: {
+                filterInit: function () {
+                    var self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("GetExamList")',
+                        success: function (data) {
+                            self.testList=[{}].concat(data.Data);
+                        }
+                    });
+                },
+                beginTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '',
+                        maxDate: '#F{$dp.$D(\'endTime\')}',
+                        onpicked: function(dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.StartTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                            self.filter.StartTime = null;
+                            self.$emit('input', '');
+                        }
+                    });
+                },
+                endTimePickerClick: function (id) {
+                    var self = this;
+                    window.WdatePicker({
+                        el: document.getElementById(id),
+                        minDate: '#F{$dp.$D(\'beginTime\')}',
+                        maxDate: '',
+                        onpicked: function(dp) {
+                            var dateStr = dp.cal.getDateStr();
+                            self.filter.EndTime = dateStr;
+                            self.$emit('input', dateStr);
+                        },
+                        oncleared: function(dp) {
+                            self.filter.EndTime = null;
+                            self.$emit('input', '');
+                        }
+                    });
+                },
+               search: function () {
+                   var self = this;
+                   let json = JSON.stringify(this.filter);
+                    $.ajax({
+                        url: "@Url.Action("TestStatisticsQuery")",
+                        type: "GET",
+                        contentType: 'application/json;charset=UTF-8',
+                        data:this.filter ,
+                        datatype: "json",
+                        success: function (data) {
+                            if (data.Data && data.Success) {
+                                self.tableList = data.Data;
+                            }
+                        }
+                    });
+                },
+                resetFitler: function () {
+                    this.filter={
+                    mode: null,
+                    document_name: null,
+                    StartTime: begindate,
+                    EndTime: enddate,
+                    examid: null,
+                    sortColumn:'TestCount'
+                    }
+                },
+                Export: function () {
+                    $.exportExcel('@Url.Action("ExportTestStatisticsList")', [{ name: 'queryString', value: $.toJSON(this.filter) }]);
+                }
+            }
+        });
+
+    </script>
+}

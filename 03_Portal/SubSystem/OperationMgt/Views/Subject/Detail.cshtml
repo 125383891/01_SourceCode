@@ -1,0 +1,249 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 主题详情</title>
+    <style>
+        [v-cloak]
+        {
+            display: none;
+        }
+    </style>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">论坛主题管理</li>
+    <li id="MenuLevel2" class="active">主题列表浏览</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget" v-cloak>
+            <div class="widget-header border-left">
+                <span class="widget-caption">查看主题详情</span>
+            </div>
+            <div class="widget-body">
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12">
+                        <div class="col-sm-1 control-label">
+                            <label>标题：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <label>{{item.TitleDesc}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12">
+                        <div class="col-sm-1 control-label">
+                            <label>发表人：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <label>{{item.CreateUserName}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12">
+                        <div class="col-sm-1 control-label">
+                            <label>发表时间：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <label>{{moment(item.CreateTime).format("YYYY-MM-DD HH:mm:ss")}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12">
+                        <div class="col-sm-1 control-label">
+                            <label>正文：</label>
+                        </div>
+                        <div class="col-sm-10">
+                            <label>
+                                {{item.ContentDesc}}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12">
+                        <div class="col-sm-1 control-label">
+                            <label>产品：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <label>{{item.ProductName}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12">
+                        <div class="col-sm-1 control-label">
+                            <label>供应商：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <label>{{item.Vendor}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12">
+                        <div class="col-sm-1 control-label">
+                            <label>图片：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <template v-for="item in parseImage(item.Images)">
+                                <img :src="item | preview" style="margin:0 5px;"  width="100" height="100" />
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12">
+                        <div class="col-sm-1 control-label">
+                            <label>依次的分派对象：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <label v-for="(data,index) in item.ReplyerUserList">
+                                {{data}}
+                                <template v-if="index<(item.ReplyerUserList.length-1)">
+                                    →
+                                </template>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12">
+                        <div class="col-sm-1 control-label">
+                            <label>评星数：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <label>{{item.StarCount}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 col-xs-12">
+                        <div class="col-sm-1 control-label">
+                            <label>供应商评价：</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <label>{{item.VendorStar}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin:0px 10px;">
+                    <div class="widget-header border-left">
+                        <span class="widget-caption">回复及评论列表</span>
+                    </div>
+                    <div class="widget-body">
+                        <table class="table table-hover table-striped table-bordered" id="replyTable">
+                            <thead class="bordered">
+                                <tr>
+                                    <th width="5%">序号</th>
+                                    <th width="20%">回复时间</th>
+                                    <th width="10%">回复人</th>
+                                    <th width="10%">类型</th>
+                                    <th>内容</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+
+       var vue= new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    SubjectId: @ViewBag.SubjectId
+                },
+                item: {},
+            },
+            mounted: function () {
+                this.loadDetail();
+                this.dataTableInit();
+                this.reloadData();
+            },
+           methods: {
+               parseImage: function (data) {
+                   if (!data) {
+                       return [];
+                   }
+                   var t = JSON.parse(data);
+                   if (t) {
+                       var mapList = _.map(t.list, function (item) { return item.img })
+                       return _.filter(mapList, function (item) { return item });
+                   } else {
+                       return [];
+                   }
+               },
+               loadDetail: function () {
+                   var self = this;
+                   $.ajax({
+                       type: 'GET',
+                       url: '@Url.Action("GetById")?subjectId=' + @ViewBag.SubjectId,
+                       success: function (data) {
+                           if (data.Data && data.Success) {
+                               self.item = data.Data;
+                           }
+                       }
+                   });
+                },
+                dataTableInit: function () {
+                    $table = $("#replyTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("SearchReplyPageList")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                {
+                                    orderable: false, title: "序号", render: function (data, type, full, meta) {
+                                        return meta.row + meta.settings._iDisplayStart + 1;
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "CreateTime", title: "回复时间", sName: "CreateTime", render: function (data, type, row, meta) {
+                                        return moment(data).format("YYYY-MM-DD HH:mm:ss")
+                                    }
+                                },
+                                { orderable: false, data: "CreateUserName", title: "回复人", sName: "CreateUserName" },
+                                {
+                                    orderable: false, data: "parent_id", title: "类型", sName: "parent_id", render: function (data, type, row, meta) {
+                                        return data ? "评论" : "回复";
+                                    }
+                                },
+                                { orderable: false, data: "Content", title: "内容", sName: "Content" }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                    grid.reload();
+                }
+            }
+        });
+
+    </script>
+}

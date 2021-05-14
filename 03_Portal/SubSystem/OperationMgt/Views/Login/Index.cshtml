@@ -1,0 +1,138 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>登录</title>
+    <meta http-equiv="Content-type" content="charset=utf-8" />
+    <link rel="stylesheet" href="~/Content/css/common.css" />
+    <link rel="stylesheet" href="~/Content/css/login.css" />
+    <script type="text/javascript" src="~/Content/third/jquery-1.12.1.js"></script>
+    <script type="text/javascript" src="~/Content/third/layer-v3.0.3/layer/layer.js"></script>
+    <script type="text/javascript">
+        function init() {
+            $(".div_main").css("margin-top", ($(".div_bg").height() - $(".div_main").height()) / 2 + "px");
+        }
+        $(init);
+        $(window).resize(init);
+    </script>
+    <script language="JavaScript">
+        //判断当前窗口是否有顶级窗口，如果有就让当前的窗口的地址栏发生变化，
+        function loadTopWindow(){
+            if (window.top!=null && window.top.document.URL!=document.URL){
+                window.top.location= document.URL;
+            }
+        }
+    </script>
+</head>
+<body onload="loadTopWindow()">
+    <div class="div_bg">
+        <div class="div_main">
+            <div class="login_head">
+                @*<img src="../../Content/img/logo-white.png" />*@
+                四川公司-企业号后台管理
+            </div>
+            <div class="login_body">
+                <form id="iform">
+                    <div class="login_fields">
+                        <img src="~/Content/img/icon_user.png" />
+                        <input id="username" type="text" name="username" value="" placeholder="用户名" />
+                    </div>
+                    <div class="login_fields">
+                        <img src="~/Content/img/icon_password.png" />
+                        <input id="password" type="password" name="password" value="" placeholder="密码" />
+                    </div>
+                    <div class="login_fields">
+                        <img src="~/Content/img/icon_verify.png" />
+                        <input id="captchatxt" class="verifyCode" type="text" name="captcha" placeholder="验证码" />
+                        <img id="captcha" src="@Url.Action("LoginValidationCode", "Login")" class="login_img" title="看不清？换一张" />
+                    </div>
+                    <div class="login_fields">
+                        <button type="submit" onclick="return login();">登录</button>
+                    </div>
+                    <div style="text-align:center; font-size:12px;">
+                        <span style="display:none;">用户名或密码错误！</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/javascript">
+    $(function(){
+        $("#captcha").bind("click",function(){
+            this.src = "@Url.Action("LoginValidationCode", "Login")?time=" + (new Date()).getTime();
+        });
+    });
+
+    var getUrlParam = function (name) {
+        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+        if (r!=null)
+            return unescape(r[2]);
+
+        return null; //返回参数值
+    };
+
+    var login = function(){
+        if($("#username").val()==""){
+            layer.msg("请输入用户名。");
+            return false;
+        }
+        if($("#password").val()==""){
+            layer.msg("请输入密码。");
+            return false;
+        }
+        if($("#captchatxt").val()==""){
+            layer.msg("请正确的验证码。");
+            return false;
+        }
+        var result=false;
+        var params=JSON.stringify({
+            account:$("#username").val(),
+            password:$("#password").val(),
+            verifycode:$("#captchatxt").val()
+        });
+        layer.msg('正在登录', {
+            icon: 16,
+            shade: 0.01,
+            time: 10000
+        });
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json;charset=UTF-8',
+            url: "@Url.Action("Login")",
+            data: params,
+            dataType: "json",
+            timeout:20000,
+            success: function (data) {
+                layer.closeAll();
+                if (data && data.Success) {
+                    var returnUrl = getUrlParam("returnurl");
+                    if (returnUrl) {
+                        window.location.href = returnUrl;
+                    } else {
+                        window.location.href = '@Url.Action("HomePage","System")';
+                    }
+                } else {
+                    layer.msg(data.Message);
+                    $("#captcha").click();
+                    result = false;
+                }
+            },
+            error:function(xhr,textStatus){
+                layer.closeAll();
+                layer.msg("登录失败，出现异常");
+                $("#captcha").click();
+            },
+            complete:function(){
+            }
+        });
+        return result;
+    }
+</script>

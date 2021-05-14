@@ -1,0 +1,337 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{23746F54-D557-4734-A4DB-B11FE43E9EA5}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LYY.EnterpriseWxMgt.OperationMgt.Portal</RootNamespace>
+    <AssemblyName>LYY.EnterpriseWxMgt.OperationMgt.Portal</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <ApplicationInsightsResourceId />
+    <Use64BitIISExpress />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NPOI.Excel.2.1.1\lib\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Mvc.FixedDisplayModes">
+      <HintPath>..\..\..\..\ReferenceLib\Microsoft\Microsoft.Web.Mvc.FixedDisplayModes.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\ReferenceLib\Other\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI, Version=2.1.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NPOI.Excel.2.1.1\lib\NPOI.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OOXML, Version=2.1.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NPOI.Excel.2.1.1\lib\NPOI.OOXML.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXml4Net, Version=2.1.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NPOI.Excel.2.1.1\lib\NPOI.OpenXml4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXmlFormats, Version=2.1.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NPOI.Excel.2.1.1\lib\NPOI.OpenXmlFormats.dll</HintPath>
+    </Reference>
+    <Reference Include="org.in2bits.MyXls">
+      <HintPath>..\..\..\..\ReferenceLib\Other\org.in2bits.MyXls.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http.Formatting">
+      <HintPath>..\..\..\..\ReferenceLib\System\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\ReferenceLib\System\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\ReferenceLib\System\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\ReferenceLib\System\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\ReferenceLib\System\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Net.Http">
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest">
+    </Reference>
+    <Reference Include="YZ.PortalBase">
+      <HintPath>..\..\..\..\ReferenceLib\YZ\YZ.PortalBase.dll</HintPath>
+    </Reference>
+    <Reference Include="YZ.Utility">
+      <HintPath>..\..\..\..\ReferenceLib\YZ\YZ.Utility.dll</HintPath>
+    </Reference>
+    <Reference Include="YZ.Utility.Web">
+      <HintPath>..\..\..\..\ReferenceLib\YZ\YZ.Utility.Web.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controllers\ArticleController.cs" />
+    <Compile Include="Controllers\DocumentController.cs" />
+    <Compile Include="Controllers\ExcelHelper.cs" />
+    <Compile Include="Controllers\VotingEventsController.cs" />
+    <Compile Include="Controllers\LoginController.cs" />
+    <Compile Include="Controllers\InfoManageController.cs" />
+    <Compile Include="Controllers\MockTestController.cs" />
+    <Compile Include="Controllers\PlanController.cs" />
+    <Compile Include="Controllers\ReportController.cs" />
+    <Compile Include="Controllers\SubjectController.cs" />
+    <Compile Include="Controllers\SystemController.cs" />
+    <Compile Include="Models\JsTreeModel.cs" />
+    <Compile Include="OperationMgtPortalAreaRegistration.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Article\List.cshtml" />
+    <Content Include="Views\Article\ArticleReplyList.cshtml" />
+    <Content Include="Views\Article\Edit.cshtml" />
+    <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\OperationMgt.pubxml" />
+    <Content Include="Views\Document\_EditFolder.cshtml" />
+    <Content Include="Views\Document\_EditDocument.cshtml" />
+    <Content Include="Web.config" />
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Views\Web.config" />
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Subject\List.cshtml" />
+    <Content Include="Views\Subject\Detail.cshtml" />
+    <Content Include="Views\Subject\_EditView.cshtml" />
+    <Content Include="Views\Report\ColumnChart.cshtml" />
+    <Content Include="Views\Report\LineChart.cshtml" />
+    <Content Include="Views\Login\Index.cshtml" />
+    <Content Include="Views\System\_EditUser.cshtml" />
+    <Content Include="Views\System\_EditRole.cshtml" />
+    <Content Include="Views\System\RoleFunction.cshtml" />
+    <Content Include="Views\Report\ComplaintStatistics.cshtml" />
+    <Content Include="Views\Report\ActivityStatistics.cshtml" />
+    <Content Include="Views\Report\SubjectStatistics.cshtml" />
+    <Content Include="Views\Report\ArticleInterviewStatistics.cshtml" />
+    <Content Include="Views\Report\ProductVendorStatistics.cshtml" />
+    <Content Include="Views\Report\ExternalDepartmentStatistics.cshtml" />
+    <Content Include="Views\MockTest\ExamConfig.cshtml" />
+    <Content Include="Views\MockTest\QuestionList.cshtml" />
+    <Content Include="Views\MockTest\_ExamEditView.cshtml" />
+    <Content Include="Views\MockTest\_QuestionEditView.cshtml" />
+    <Content Include="Views\MockTest\TestHistory.cshtml" />
+    <Content Include="Views\MockTest\TestStatistics.cshtml" />
+    <Content Include="Views\MockTest\_ShowImgView.cshtml" />
+    <Content Include="Views\Plan\UserPlanRank.cshtml" />
+    <Content Include="Views\Plan\DeptPlanRank.cshtml" />
+    <Content Include="Views\Subject\_ScoreExtraEditView.cshtml" />
+    <Content Include="Views\Subject\_EditWeight.cshtml" />
+    <Content Include="Views\Subject\Export.cshtml" />
+    <Content Include="Views\MockTest\RankSetting.cshtml" />
+    <Content Include="Views\MockTest\_RankSettingEditView.cshtml" />
+    <Content Include="Views\InfoManage\_BulletinEditView.cshtml" />
+    <Content Include="Views\InfoManage\Bulletin.cshtml" />
+    <Content Include="Views\MockTest\IndividualPoints.cshtml" />
+    <Content Include="Views\MockTest\TeamPoints.cshtml" />
+    <Content Include="Views\VotingEvents\_VoteEditView.cshtml" />
+    <Content Include="Views\VotingEvents\Vote.cshtml" />
+    <Content Include="Views\VotingEvents\VoteStatistics.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Content\css\" />
+    <Folder Include="Content\font\" />
+    <Folder Include="Content\img\" />
+    <Folder Include="Content\scripts\" />
+    <Folder Include="Content\third\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\System\RoleList.cshtml" />
+    <Content Include="Views\System\UserList.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\System\HomePage.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Plan\List.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\01_Entity\LYY.Article.Entity\LYY.Article.Entity.csproj">
+      <Project>{72b54b8d-a5e8-44a8-920a-2d40ce52f107}</Project>
+      <Name>LYY.Article.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\01_Entity\LYY.AuthCenter.Entity\LYY.AuthCenter.Entity.csproj">
+      <Project>{105fc1ca-e6c1-452e-b638-157f9688a902}</Project>
+      <Name>LYY.AuthCenter.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\01_Entity\LYY.Common.Entity\LYY.Common.Entity.csproj">
+      <Project>{379BF747-BF5B-4552-9F96-AB6AFD21A7F7}</Project>
+      <Name>LYY.Common.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\01_Entity\LYY.Document.Entity\LYY.Document.Entity.csproj">
+      <Project>{98626a16-7a5d-4580-ad9c-b55895e2e1a8}</Project>
+      <Name>LYY.Document.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\01_Entity\LYY.InfoManage.Entity\LYY.InfoManage.Entity.csproj">
+      <Project>{9151C377-EE81-4170-B537-CA44F0F60B36}</Project>
+      <Name>LYY.InfoManage.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\01_Entity\LYY.MockTest.Entity\LYY.MockTest.Entity.csproj">
+      <Project>{DD353C5A-D836-43EB-8F7B-DCF256CE8D28}</Project>
+      <Name>LYY.MockTest.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\01_Entity\LYY.Plan.Entity\LYY.Plan.Entity.csproj">
+      <Project>{60b6b4db-67c2-4405-93d4-2bb697196808}</Project>
+      <Name>LYY.Plan.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\01_Entity\LYY.Report.Entity\LYY.Report.Entity.csproj">
+      <Project>{7878341A-1C3C-4989-9C7F-3DC91F877590}</Project>
+      <Name>LYY.Report.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\01_Entity\LYY.Subject.Entity\LYY.Subject.Entity.csproj">
+      <Project>{C877E0B1-21DE-4519-8460-FDC918E435E1}</Project>
+      <Name>LYY.Subject.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\01_Entity\LYY.VotingEvents.Entity\LYY.VotingEvents.Entity.csproj">
+      <Project>{5061E8C7-E22C-41FE-9882-5B8B0EEC765A}</Project>
+      <Name>LYY.VotingEvents.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\02_Service\Service\ArticleService\LYY.ArticleService.Service\LYY.ArticleService.Service.csproj">
+      <Project>{f637e8af-9ec0-438d-9eef-efbd9480e545}</Project>
+      <Name>LYY.ArticleService.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\02_Service\Service\AuthCenterService\LYY.AuthCenterService.Service\LYY.AuthCenterService.Service.csproj">
+      <Project>{a289f048-ae53-4f01-a73f-7a4145d196b1}</Project>
+      <Name>LYY.AuthCenterService.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\02_Service\Service\CommonService\LYY.Common.Service\LYY.Common.Service.csproj">
+      <Project>{dd933cae-2722-47b8-8370-b06b95d6b965}</Project>
+      <Name>LYY.Common.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\02_Service\Service\DocumentService\LYY.DocumentService.Service\LYY.DocumentService.Service.csproj">
+      <Project>{84344625-7f62-413e-9eb1-89aa5cdcb2a0}</Project>
+      <Name>LYY.DocumentService.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\02_Service\Service\LYY.InfoManageService.Service\LYY.InfoManageService.Service.csproj">
+      <Project>{B70A12DB-6AAC-49F5-A0F5-5730D00A1EE2}</Project>
+      <Name>LYY.InfoManageService.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\02_Service\Service\MockTestService\LYY.MockTestService.Service\LYY.MockTestService.Service.csproj">
+      <Project>{359B4656-7D04-4102-AFDC-F309A2EC6730}</Project>
+      <Name>LYY.MockTestService.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\02_Service\Service\PlanService\LYY.PlanService.Service\LYY.PlanService.Service.csproj">
+      <Project>{703f5747-a7c1-4cab-8899-51cb3dcda844}</Project>
+      <Name>LYY.PlanService.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\02_Service\Service\ReportService\LYY.ReportService.Service\LYY.ReportService.Service.csproj">
+      <Project>{95238314-4BE8-4DA4-8595-3E8F2E5C3689}</Project>
+      <Name>LYY.ReportService.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\02_Service\Service\SubjectService\LYY.SubjectService.Service\LYY.SubjectService.Service.csproj">
+      <Project>{A97A0318-13C5-4A66-8E63-B955C4FC6302}</Project>
+      <Name>LYY.SubjectService.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\02_Service\Service\VotingEventsService\LYY.VotingEventsService.Service\LYY.VotingEventsService.Service.csproj">
+      <Project>{4875C5CE-0308-43FA-900A-44632BCA54F7}</Project>
+      <Name>LYY.VotingEventsService.Service</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Plan\_Edit.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Document\List.cshtml" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>56333</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:56333/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy  /C /I /R /Y /S "$(TargetDir)*.*" "$(TargetDir)..\..\..\bin\"</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
+</Project>

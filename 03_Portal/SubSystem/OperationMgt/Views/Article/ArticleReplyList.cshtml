@@ -1,0 +1,125 @@
+﻿@{
+
+}
+
+@section rsHeader {
+    <title>四川公司企业号管理后台 - 评论管理</title>
+}
+
+@section rsNavigation {
+    <li id="MenuLevel1">推文管理</li>
+    <li id="MenuLevel2" class="active">推文浏览</li>
+}
+
+@section rsContent {
+    <div id="container">
+        <div class="widget">
+            <div class="widget-header border-left">
+                <span class="widget-caption">查询结果</span>
+                <div class="widget-buttons">
+                    <span v-on:click="gotoArticleList" class="btn btn-yellow btn-xs">返回推文列表</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                <table class="table table-hover table-striped table-bordered" id="articleReplyListTable">
+                    <thead class="bordered">
+                        <tr>
+                            <th>序号</th>
+                            <th>评论人</th>
+                            <th>评论内容</th>
+                            <th>发表时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+}
+@section rsFooter {
+    <script type="text/javascript">
+        var grid = new Datatable();
+
+       var vue= new Vue({
+            el: '#container',
+            data: {
+                filter: {
+                    ArticleId: @ViewBag.ArticleId,
+                }
+            },
+            mounted: function () {
+                this.dataTableInit();
+                this.reloadData();
+            },
+            methods: {
+                dataTableInit: function () {
+                    $table = $("#articleReplyListTable");
+                    grid.init({
+                        src: $table,
+                        dataTable: {
+                            "ajax": {
+                                "url": "@Url.Action("ArticleReplyQuery")",
+                                "type": "POST",
+                                "datatype": "json"
+                            },
+                            "deferLoading": 0,
+                            columns: [
+                                {
+                                    orderable: false, title: "序号", render: function (data, type, full, meta) {
+                                        return meta.row + meta.settings._iDisplayStart + 1;
+                                    }
+                                },
+                                { orderable: false, data: "UserName", title: "评论人", sName: "UserName" },
+                                { orderable: false, data: "Content", title: "评论内容", sName: "Content" },
+                                {
+                                    orderable: false, data: "CreateTime", title: "发表时间", sName: "CreateTime", render: function (data, type, row, meta) {
+                                        return moment(data).format("YYYY-MM-DD HH:mm:ss")
+                                    }
+                                },
+                                {
+                                    orderable: false, data: "BusinessId", title: "操作", sName: "BusinessId", render: function (data, type, row, meta) {
+                                        return "<a style='cursor: pointer' href='javascript:void(0)' onclick='vue.delete(" + data + ")'>" + "删除" + "</a>";
+                                    }
+                                }
+                            ],
+                            "order": [],
+                            "drawCallback": function () {
+                                //渲染完成以后执行按钮事件绑定
+                            }
+                        }
+                    });
+                },
+                reloadData: function () {
+                    grid.clearAjaxParams();
+                    grid.addAjaxParam("data", encodeURIComponent($.toJSON(this.filter)));
+                    grid.reload();
+                },
+                gotoArticleList: function () {
+                    location.href = '@Url.Action("list")';
+                },
+                delete: function (id) {
+                    var self = this;
+                     $.confirm("您确定要删除该评论吗？", function (ok) {
+                        if (ok) {
+                            $.ajax({
+                                type: 'GET',
+                                contentType: 'application/json',
+                                url: '@Url.Action("ArticleReplyDelete")?articleReplyId=' + id,
+                                success: function (data) {
+                                    if (data.Data && data.Success) {
+                                        $.showSuccess("删除成功！");
+                                        self.reloadData();
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                }
+            }
+        });
+
+    </script>
+}

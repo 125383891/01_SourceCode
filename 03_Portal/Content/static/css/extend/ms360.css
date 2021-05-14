@@ -1,0 +1,65 @@
+.reportStatistic {
+    padding: 5px 10px;
+    background-color: #ffffee;
+}
+
+.reportTableContainer {
+    overflow: auto;
+    padding: 1px;
+}
+
+hr{
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.login-container
+{
+    max-width: 400px;
+    margin-top:50px;
+}
+
+.login-container .loginLogo
+{
+    margin-bottom:5px;
+}
+
+.login-container .loginbox {
+    box-shadow: 0 0 14px rgba(0, 0, 0, 0.1);
+    height: auto !important;
+    padding: 0px 0px;
+    position: relative;
+    width: 400px !important;
+}
+
+.login-container .loginbox .loginbox-title
+{
+    color: #444;
+    font-family: "Lucida Sans","trebuchet MS",Arial,Helvetica;
+    font-size: 20px;
+    height: 42px;
+    padding:0px 0px;
+    line-height:42px;
+    margin-bottom:10px;
+    position: relative;
+    text-align: center;
+    width: 100%;
+    background-color:#5bc0de !important;
+}
+
+.login-container .loginbox .loginbox-textbox {
+    padding: 5px 40px;
+}
+
+.login-container .loginbox .loginbox-footer
+{
+    margin-top:10px;
+    height: 42px;
+    padding:0px 0px;
+    line-height:42px;
+    font-size: 15px;
+    color:white;
+    font-weight: normal;
+    background-color:#5bc0de !important;
+    text-align:center;
+}
