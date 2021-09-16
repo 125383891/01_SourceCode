@@ -103,6 +103,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYY.VotingEventsService.Dat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYY.VotingEventsService.Service", "02_Service\Service\VotingEventsService\LYY.VotingEventsService.Service\LYY.VotingEventsService.Service.csproj", "{4875C5CE-0308-43FA-900A-44632BCA54F7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYY.OperationGuide.Entity", "01_Entity\LYY.OperationGuide.Entity\LYY.OperationGuide.Entity.csproj", "{69551B49-FDAA-41EB-B476-A2668E99C9F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -241,6 +243,10 @@ Global
 		{4875C5CE-0308-43FA-900A-44632BCA54F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4875C5CE-0308-43FA-900A-44632BCA54F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4875C5CE-0308-43FA-900A-44632BCA54F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69551B49-FDAA-41EB-B476-A2668E99C9F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69551B49-FDAA-41EB-B476-A2668E99C9F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69551B49-FDAA-41EB-B476-A2668E99C9F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69551B49-FDAA-41EB-B476-A2668E99C9F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -292,6 +298,7 @@ Global
 		{8BA5D954-A2F3-4AA9-9C5E-69CB5EC72A01} = {43B90E58-B925-4A04-ACF6-D6A97F38214D}
 		{A9C88C5A-DAEF-488F-A7AB-B55255621BC7} = {8BA5D954-A2F3-4AA9-9C5E-69CB5EC72A01}
 		{4875C5CE-0308-43FA-900A-44632BCA54F7} = {8BA5D954-A2F3-4AA9-9C5E-69CB5EC72A01}
+		{69551B49-FDAA-41EB-B476-A2668E99C9F4} = {4E96BA9B-A760-400A-81C1-10F22B0BB05C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6B3E06BC-97A0-4DE9-80FE-038CEFCBE29F}
